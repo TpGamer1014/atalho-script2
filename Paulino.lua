@@ -1,5 +1,5 @@
 -- ==========================================
--- PAULINO MM2 - SCRIPT COMPLETO (FINAL CORRIGIDO)
+-- PAULINO MM2 - SCRIPT COMPLETO (CORRIGIDO)
 -- ==========================================
 
 local Players = game:GetService("Players")
@@ -161,48 +161,25 @@ MinCorner.CornerRadius = UDim.new(0, 6)
 MinCorner.Parent = MinimizeButton
 
 -- ==========================================
--- BOTÃO MINIMIZADO (TOTALMENTE BRANCO)
+-- BOTÃO MINIMIZADO (BRANCO SÓLIDO CORRIGIDO)
 -- ==========================================
 local OpenButton = Instance.new("TextButton")
 OpenButton.Name = "OpenButton"
 OpenButton.Size = UDim2.new(0, 140, 0, 36)
 OpenButton.Position = UDim2.new(0, 0, 0, 200)
-OpenButton.Text = ""
+OpenButton.Text = "☀️  🌸 Paulin"
+OpenButton.TextColor3 = Color3.fromRGB(20, 20, 30)
+OpenButton.TextSize = 14
+OpenButton.Font = Enum.Font.GothamBold
 OpenButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 OpenButton.BackgroundTransparency = 0
 OpenButton.BorderSizePixel = 0
 OpenButton.Visible = false
-OpenButton.ClipsDescendants = true
 OpenButton.Parent = ScreenGui
 
 local OpenCorner = Instance.new("UICorner")
 OpenCorner.CornerRadius = UDim.new(0, 10)
 OpenCorner.Parent = OpenButton
-
-local LeftSquareCover = Instance.new("Frame")
-LeftSquareCover.Size = UDim2.new(0, 15, 1, 0)
-LeftSquareCover.Position = UDim2.new(0, 0, 0, 0)
-LeftSquareCover.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-LeftSquareCover.BorderSizePixel = 0
-LeftSquareCover.ZIndex = 2
-LeftSquareCover.Parent = OpenButton
-
-local OpenText = Instance.new("TextLabel")
-OpenText.Size = UDim2.new(1, 0, 1, 0)
-OpenText.Position = UDim2.new(0, 0, 0, 0)
-OpenText.Text = "☀️  🌸 Paulin"
-OpenText.TextColor3 = Color3.fromRGB(20, 20, 30)
-OpenText.TextSize = 14
-OpenText.Font = Enum.Font.GothamBold
-OpenText.BackgroundTransparency = 1
-OpenText.ZIndex = 3
-OpenText.Parent = OpenButton
-
-local OpenStroke = Instance.new("UIStroke")
-OpenStroke.Thickness = 2
-OpenStroke.Color = Color3.fromRGB(255, 255, 255)
-OpenStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-OpenStroke.Parent = OpenButton
 
 local minimized = false
 MinimizeButton.MouseButton1Click:Connect(function()
