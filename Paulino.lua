@@ -1,5 +1,5 @@
 -- ==========================================
--- PAULINO MM2 - SCRIPT COMPLETO (FINAL FIX v4)
+-- 🌟 PAULINO MM2 - SCRIPT COMPLETO & ULTIMATE 🔥
 -- ==========================================
 
 local Players = game:GetService("Players")
@@ -9,6 +9,8 @@ local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local VirtualUser = game:GetService("VirtualUser")
 local TweenService = game:GetService("TweenService")
+local TeleportService = game:GetService("TeleportService")
+local HttpService = game:GetService("HttpService")
 
 local LocalPlayer = Players.LocalPlayer
 local Camera = Workspace.CurrentCamera
@@ -20,6 +22,7 @@ local espActive = false
 local aimbotActive = false
 local freecamActive = false
 local antiAfkAtivo = false
+local fpsBoostAtivo = false
 
 local xpFarmConnection = nil
 local safePlatform = nil
@@ -28,9 +31,10 @@ local freecamConn = nil
 local trollSheriffConnection = nil
 local trollMurderConnection = nil
 local antiAfkConnection = nil
+local speedJumpConnection = nil
 
 -- ==========================================
--- ANTI-FLING PASSIVO
+-- 🛡️ ANTI-FLING PASSIVO
 -- ==========================================
 local function iniciarAntiFling()
     if antiFlingConnection then antiFlingConnection:Disconnect() end
@@ -50,7 +54,7 @@ end
 iniciarAntiFling()
 
 -- ==========================================
--- CRIAÇÃO DA GUI
+-- 🎨 CRIAÇÃO DA GUI ESTILIZADA
 -- ==========================================
 local function getGuiContainer()
     if gethui then return gethui() end
@@ -73,31 +77,37 @@ ScreenGui.Parent = parentContainer
 local MainFrame = Instance.new("Frame")
 MainFrame.Size = UDim2.new(0, 520, 0, 360)
 MainFrame.Position = UDim2.new(0.5, -260, 0.5, -180)
-MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
-MainFrame.BackgroundTransparency = 0.25
+MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+MainFrame.BackgroundTransparency = 0.2
 MainFrame.BorderSizePixel = 0
 MainFrame.Parent = ScreenGui
 
 local MainCorner = Instance.new("UICorner")
-MainCorner.CornerRadius = UDim.new(0, 10)
+MainCorner.CornerRadius = UDim.new(0, 12)
 MainCorner.Parent = MainFrame
 
+local MainStroke = Instance.new("UIStroke")
+MainStroke.Color = Color3.fromRGB(120, 90, 255)
+MainStroke.Transparency = 0.4
+MainStroke.Thickness = 1.5
+MainStroke.Parent = MainFrame
+
 local TopBar = Instance.new("Frame")
-TopBar.Size = UDim2.new(1, 0, 0, 35)
-TopBar.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
-TopBar.BackgroundTransparency = 0.3
+TopBar.Size = UDim2.new(1, 0, 0, 38)
+TopBar.BackgroundColor3 = Color3.fromRGB(22, 22, 30)
+TopBar.BackgroundTransparency = 0.2
 TopBar.BorderSizePixel = 0
 TopBar.Parent = MainFrame
 
 local TopCorner = Instance.new("UICorner")
-TopCorner.CornerRadius = UDim.new(0, 10)
+TopCorner.CornerRadius = UDim.new(0, 12)
 TopCorner.Parent = TopBar
 
 local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(0, 200, 1, 0)
+Title.Size = UDim2.new(0, 280, 1, 0)
 Title.Position = UDim2.new(0, 15, 0, 0)
-Title.Text = "☀️ Paulino Hub - MM2"
-Title.TextColor3 = Color3.fromRGB(240, 240, 245)
+Title.Text = "🌟 Paulino Hub ✦ MM2 Edition 🚀"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextSize = 13
 Title.Font = Enum.Font.GothamBold
 Title.BackgroundTransparency = 1
@@ -105,26 +115,31 @@ Title.TextXAlignment = Enum.TextXAlignment.Left
 Title.Parent = TopBar
 
 local MinimizeButton = Instance.new("TextButton")
-MinimizeButton.Size = UDim2.new(0, 30, 0, 25)
-MinimizeButton.Position = UDim2.new(1, -35, 0, 5)
-MinimizeButton.Text = "-"
+MinimizeButton.Size = UDim2.new(0, 32, 0, 26)
+MinimizeButton.Position = UDim2.new(1, -38, 0, 6)
+MinimizeButton.Text = "➖"
 MinimizeButton.TextColor3 = Color3.fromRGB(240, 240, 245)
-MinimizeButton.TextSize = 16
+MinimizeButton.TextSize = 14
 MinimizeButton.Font = Enum.Font.GothamBold
-MinimizeButton.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
+MinimizeButton.BackgroundColor3 = Color3.fromRGB(40, 40, 52)
 MinimizeButton.BackgroundTransparency = 0.3
 MinimizeButton.BorderSizePixel = 0
 MinimizeButton.Parent = TopBar
 
+local MinCorner = Instance.new("UICorner")
+MinCorner.CornerRadius = UDim.new(0, 6)
+MinCorner.Parent = MinimizeButton
+
 -- ==========================================
--- BOTÃO MINIMIZADO (COM ANIMAÇÃO)
+-- 🔘 BOTÃO FLUTUANTE MINIMIZADO
 -- ==========================================
 local OpenButton = Instance.new("TextButton")
-OpenButton.Size = UDim2.new(0, 32, 0, 32)
-OpenButton.Position = UDim2.new(0, -16, 0.5, -16)
-OpenButton.Text = ""
-OpenButton.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
-OpenButton.BackgroundTransparency = 0.5
+OpenButton.Size = UDim2.new(0, 38, 0, 38)
+OpenButton.Position = UDim2.new(0, -19, 0.5, -19)
+OpenButton.Text = "⭐"
+OpenButton.TextSize = 18
+OpenButton.BackgroundColor3 = Color3.fromRGB(15, 15, 22)
+OpenButton.BackgroundTransparency = 0.3
 OpenButton.BorderSizePixel = 0
 OpenButton.Visible = false
 OpenButton.Parent = ScreenGui
@@ -134,9 +149,9 @@ OpenCorner.CornerRadius = UDim.new(1, 0)
 OpenCorner.Parent = OpenButton
 
 local OpenStroke = Instance.new("UIStroke")
-OpenStroke.Color = Color3.fromRGB(80, 80, 100)
-OpenStroke.Transparency = 0.5
-OpenStroke.Thickness = 1
+OpenStroke.Color = Color3.fromRGB(120, 90, 255)
+OpenStroke.Transparency = 0.3
+OpenStroke.Thickness = 2
 OpenStroke.Parent = OpenButton
 
 local minimized = false
@@ -149,7 +164,7 @@ local function alternarMenu()
     if not minimized then
         TweenService:Create(MainFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
             Size = UDim2.new(0, 0, 0, 0),
-            Position = OpenButton.Position + UDim2.new(0, 16, 0, 16)
+            Position = OpenButton.Position + UDim2.new(0, 19, 0, 19)
         }):Play()
         
         task.wait(0.2)
@@ -160,7 +175,7 @@ local function alternarMenu()
         OpenButton.Size = UDim2.new(0, 0, 0, 0)
         OpenButton.Visible = true
         TweenService:Create(OpenButton, TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-            Size = UDim2.new(0, 32, 0, 32)
+            Size = UDim2.new(0, 38, 0, 38)
         }):Play()
         
         minimized = true
@@ -171,7 +186,7 @@ local function alternarMenu()
         
         task.wait(0.15)
         OpenButton.Visible = false
-        OpenButton.Size = UDim2.new(0, 32, 0, 32)
+        OpenButton.Size = UDim2.new(0, 38, 0, 38)
         
         MainFrame.Size = UDim2.new(0, 0, 0, 0)
         MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
@@ -224,11 +239,10 @@ end)
 UserInputService.InputEnded:Connect(function(input)
     if openDragging and (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
         openDragging = false
-        
         local viewportSize = Camera.ViewportSize
         local currentAbsPos = OpenButton.AbsolutePosition
-        local targetX = (currentAbsPos.X < viewportSize.X / 2) and -16 or (viewportSize.X - 16)
-        local targetY = math.clamp(currentAbsPos.Y, -16, viewportSize.Y - 16)
+        local targetX = (currentAbsPos.X < viewportSize.X / 2) and -19 or (viewportSize.X - 19)
+        local targetY = math.clamp(currentAbsPos.Y, -19, viewportSize.Y - 19)
         
         TweenService:Create(OpenButton, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
             Position = UDim2.new(0, targetX, 0, targetY)
@@ -240,7 +254,7 @@ UserInputService.InputEnded:Connect(function(input)
     end
 end)
 
--- Arrastar GUI Principal
+-- Arrastar Painel
 local dragging, dragStart, startPos
 TopBar.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -265,23 +279,29 @@ end)
 
 -- Sidebar & Páginas
 local Sidebar = Instance.new("ScrollingFrame")
-Sidebar.Size = UDim2.new(0, 140, 1, -35)
-Sidebar.Position = UDim2.new(0, 0, 0, 35)
-Sidebar.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
-Sidebar.BackgroundTransparency = 0.4
+Sidebar.Size = UDim2.new(0, 145, 1, -38)
+Sidebar.Position = UDim2.new(0, 0, 0, 38)
+Sidebar.BackgroundColor3 = Color3.fromRGB(10, 10, 15)
+Sidebar.BackgroundTransparency = 0.5
 Sidebar.BorderSizePixel = 0
-Sidebar.CanvasSize = UDim2.new(0, 0, 0, 300)
+Sidebar.CanvasSize = UDim2.new(0, 0, 0, 360)
 Sidebar.ScrollBarThickness = 2
 Sidebar.Parent = MainFrame
 
 local SidebarLayout = Instance.new("UIListLayout")
 SidebarLayout.SortOrder = Enum.SortOrder.LayoutOrder
-SidebarLayout.Padding = UDim.new(0, 4)
+SidebarLayout.Padding = UDim.new(0, 5)
 SidebarLayout.Parent = Sidebar
 
+local SidebarPad = Instance.new("UIPadding")
+SidebarPad.PaddingTop = UDim.new(0, 8)
+SidebarPad.PaddingLeft = UDim.new(0, 5)
+SidebarPad.PaddingRight = UDim.new(0, 5)
+SidebarPad.Parent = Sidebar
+
 local ContentContainer = Instance.new("Frame")
-ContentContainer.Size = UDim2.new(1, -140, 1, -35)
-ContentContainer.Position = UDim2.new(0, 140, 0, 35)
+ContentContainer.Size = UDim2.new(1, -145, 1, -38)
+ContentContainer.Position = UDim2.new(0, 145, 0, 38)
 ContentContainer.BackgroundTransparency = 1
 ContentContainer.Parent = MainFrame
 
@@ -292,7 +312,7 @@ local function createPage(name)
     page.Size = UDim2.new(1, 0, 1, 0)
     page.BackgroundTransparency = 1
     page.BorderSizePixel = 0
-    page.CanvasSize = UDim2.new(0, 0, 0, 480)
+    page.CanvasSize = UDim2.new(0, 0, 0, 580)
     page.ScrollBarThickness = 4
     page.Visible = false
     page.Parent = ContentContainer
@@ -314,20 +334,19 @@ end
 
 local function createTabButton(name, displayName, default)
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(1, -10, 0, 32)
-    btn.Position = UDim2.new(0, 5, 0, 0)
-    btn.Text = "  " .. displayName
-    btn.TextColor3 = default and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(160, 160, 170)
+    btn.Size = UDim2.new(1, 0, 0, 34)
+    btn.Text = " " .. displayName
+    btn.TextColor3 = default and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(160, 160, 175)
     btn.TextSize = 12
     btn.Font = Enum.Font.GothamMedium
     btn.TextXAlignment = Enum.TextXAlignment.Left
-    btn.BackgroundColor3 = default and Color3.fromRGB(45, 45, 55) or Color3.fromRGB(20, 20, 24)
-    btn.BackgroundTransparency = default and 0.3 or 0.6
+    btn.BackgroundColor3 = default and Color3.fromRGB(50, 45, 75) or Color3.fromRGB(20, 20, 28)
+    btn.BackgroundTransparency = default and 0.2 or 0.6
     btn.BorderSizePixel = 0
     btn.Parent = Sidebar
     
     local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 6)
+    corner.CornerRadius = UDim.new(0, 8)
     corner.Parent = btn
     
     local page = createPage(name)
@@ -337,7 +356,7 @@ local function createTabButton(name, displayName, default)
         for pName, pObj in pairs(pages) do 
             if pName == name then
                 pObj.Visible = true
-                pObj.Position = UDim2.new(0, 20, 0, 0)
+                pObj.Position = UDim2.new(0, 15, 0, 0)
                 pObj.BackgroundTransparency = 1
                 TweenService:Create(pObj, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
                     Position = UDim2.new(0, 0, 0, 0)
@@ -349,42 +368,50 @@ local function createTabButton(name, displayName, default)
         
         for _, b in ipairs(Sidebar:GetChildren()) do
             if b:IsA("TextButton") then
-                b.BackgroundColor3 = Color3.fromRGB(20, 20, 24)
+                b.BackgroundColor3 = Color3.fromRGB(20, 20, 28)
                 b.BackgroundTransparency = 0.6
-                b.TextColor3 = Color3.fromRGB(160, 160, 170)
+                b.TextColor3 = Color3.fromRGB(160, 160, 175)
             end
         end
         
         TweenService:Create(btn, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-            BackgroundColor3 = Color3.fromRGB(45, 45, 55),
-            BackgroundTransparency = 0.3
+            BackgroundColor3 = Color3.fromRGB(50, 45, 75),
+            BackgroundTransparency = 0.2
         }):Play()
         btn.TextColor3 = Color3.fromRGB(255, 255, 255)
     end)
 end
 
-createTabButton("Home", "Início", true)
-createTabButton("Farm", "Farm de XP", false)
-createTabButton("Combat", "Combate / TP", false)
-createTabButton("Visuals", "Visual / ESP", false)
-createTabButton("Camera", "Câmera", false)
-createTabButton("Troll", "🤡 Troll", false)
+createTabButton("Home", "🏠 Início", true)
+createTabButton("Farm", "⚡ Farm XP", false)
+createTabButton("Combat", "⚔️ Combate / TP", false)
+createTabButton("Visuals", "👁️ Visual / ESP", false)
+createTabButton("Camera", "📷 Câmera", false)
+createTabButton("Troll", "🤡 Troll Hub", false)
+createTabButton("Settings", "⚙️ Configurações", false)
 
 local function addButton(page, text)
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(1, 0, 0, 34)
+    btn.Size = UDim2.new(1, 0, 0, 36)
     btn.Text = text
-    btn.TextColor3 = Color3.fromRGB(240, 240, 245)
+    btn.TextColor3 = Color3.fromRGB(245, 245, 250)
     btn.TextSize = 12
     btn.Font = Enum.Font.GothamBold
-    btn.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
-    btn.BackgroundTransparency = 0.3
+    btn.BackgroundColor3 = Color3.fromRGB(30, 30, 42)
+    btn.BackgroundTransparency = 0.25
     btn.BorderSizePixel = 0
     btn.Parent = page
     
     local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 6)
+    corner.CornerRadius = UDim.new(0, 8)
     corner.Parent = btn
+
+    local stroke = Instance.new("UIStroke")
+    stroke.Color = Color3.fromRGB(70, 70, 95)
+    stroke.Transparency = 0.6
+    stroke.Thickness = 1
+    stroke.Parent = btn
+    
     return btn
 end
 
@@ -392,22 +419,22 @@ local function addLabel(page, text)
     local lbl = Instance.new("TextLabel")
     lbl.Size = UDim2.new(1, 0, 0, 25)
     lbl.Text = text
-    lbl.TextColor3 = Color3.fromRGB(180, 180, 190)
+    lbl.TextColor3 = Color3.fromRGB(200, 200, 215)
     lbl.TextSize = 12
-    lbl.Font = Enum.Font.Gotham
+    lbl.Font = Enum.Font.GothamBold
     lbl.BackgroundTransparency = 1
     lbl.TextXAlignment = Enum.TextXAlignment.Left
     lbl.Parent = page
     return lbl
 end
 
-addLabel(pages.Home, "Bem-vindo ao Paulino Hub!")
+addLabel(pages.Home, "✨ Bem-vindo ao Paulino Hub Ultimate!")
 
-local AntiAfkButton = addButton(pages.Home, "Anti-AFK: DESLIGADO")
+local AntiAfkButton = addButton(pages.Home, "🛡️ Anti-AFK: ❌ DESLIGADO")
 AntiAfkButton.MouseButton1Click:Connect(function()
     antiAfkAtivo = not antiAfkAtivo
-    AntiAfkButton.Text = antiAfkAtivo and "Anti-AFK: LIGADO" or "Anti-AFK: DESLIGADO"
-    AntiAfkButton.BackgroundColor3 = antiAfkAtivo and Color3.fromRGB(50, 160, 80) or Color3.fromRGB(35, 35, 42)
+    AntiAfkButton.Text = antiAfkAtivo and "🛡️ Anti-AFK: ✅ LIGADO" or "🛡️ Anti-AFK: ❌ DESLIGADO"
+    AntiAfkButton.BackgroundColor3 = antiAfkAtivo and Color3.fromRGB(40, 140, 70) or Color3.fromRGB(30, 30, 42)
     
     if antiAfkAtivo then
         if not antiAfkConnection then
@@ -424,7 +451,7 @@ AntiAfkButton.MouseButton1Click:Connect(function()
     end
 end)
 
-local CloseBtn = addButton(pages.Home, "Parar Tudo / Fechar Hub")
+local CloseBtn = addButton(pages.Home, "❌ Parar Tudo / Fechar Hub")
 CloseBtn.MouseButton1Click:Connect(function()
     _G.PaulinoMenuRunning = false
     xpFarmAtivo = false
@@ -433,11 +460,68 @@ CloseBtn.MouseButton1Click:Connect(function()
     if xpFarmConnection then xpFarmConnection:Disconnect() end
     if antiFlingConnection then antiFlingConnection:Disconnect() end
     if antiAfkConnection then antiAfkConnection:Disconnect() end
+    if speedJumpConnection then speedJumpConnection:Disconnect() end
     if ScreenGui then ScreenGui:Destroy() end
 end)
 
 -- ==========================================
--- ROLES
+-- ⚙️ ABA CONFIGURAÇÕES (FPS & SERVER HOP)
+-- ==========================================
+addLabel(pages.Settings, "🚀 Otimização e Desempenho:")
+
+local FpsBoostButton = addButton(pages.Settings, "⚡ Otimizador de FPS: ❌ DESLIGADO")
+
+FpsBoostButton.MouseButton1Click:Connect(function()
+    fpsBoostAtivo = not fpsBoostAtivo
+    FpsBoostButton.Text = fpsBoostAtivo and "⚡ Otimizador de FPS: ✅ LIGADO" or "⚡ Otimizador de FPS: ❌ DESLIGADO"
+    FpsBoostButton.BackgroundColor3 = fpsBoostAtivo and Color3.fromRGB(40, 140, 70) or Color3.fromRGB(30, 30, 42)
+    
+    if fpsBoostAtivo then
+        pcall(function()
+            settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
+            for _, v in ipairs(Workspace:GetDescendants()) do
+                if v:IsA("BasePart") then
+                    v.Material = Enum.Material.SmoothPlastic
+                    v.Reflectance = 0
+                elseif v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Fire") or v:IsA("Smoke") or v:IsA("Sparkles") then
+                    v.Enabled = false
+                end
+            end
+        end)
+    end
+end)
+
+addLabel(pages.Settings, "🌍 Mudança de Servidor:")
+
+local ServerHopButton = addButton(pages.Settings, "🌐 Server Hop (Mudar de Servidor)")
+
+ServerHopButton.MouseButton1Click:Connect(function()
+    ServerHopButton.Text = "🌐 A procurar servidor..."
+    ServerHopButton.BackgroundColor3 = Color3.fromRGB(180, 120, 40)
+    
+    pcall(function()
+        local servers = {}
+        local req = HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"))
+        if req and req.data then
+            for _, s in ipairs(req.data) do
+                if type(s) == "table" and s.maxPlayers and s.playing and s.id and s.playing < s.maxPlayers and s.id ~= game.JobId then
+                    table.insert(servers, s.id)
+                end
+            end
+        end
+        if #servers > 0 then
+            TeleportService:TeleportToPlaceInstance(game.PlaceId, servers[math.random(1, #servers)], LocalPlayer)
+        else
+            ServerHopButton.Text = "❌ Nenhum servidor encontrado"
+            task.wait(2)
+            ServerHopButton.Text = "🌐 Server Hop (Mudar de Servidor)"
+            ServerHopButton.BackgroundColor3 = Color3.fromRGB(30, 30, 42)
+        end
+    end)
+end)
+
+-- ==========================================
+-- 🎭 ROLES SYSTEM
 -- ==========================================
 local function getPlayerTool(p)
     if not p then return nil end
@@ -467,22 +551,20 @@ end
 
 local function partidaComecou()
     for _, p in ipairs(Players:GetPlayers()) do
-        if getPlayerTool(p) ~= nil then
-            return true
-        end
+        if getPlayerTool(p) ~= nil then return true end
     end
     return false
 end
 
 local function getPlayerColorAndRole(p)
     local tool = getPlayerTool(p)
-    if tool == "Knife" or p == getMurderer() then return Color3.fromRGB(255, 50, 50), "[Murderer]" end
-    if tool == "Gun" or p == getSheriff() then return Color3.fromRGB(50, 150, 255), "[Sheriff]" end
-    return Color3.fromRGB(50, 220, 80), "[Inocente]"
+    if tool == "Knife" or p == getMurderer() then return Color3.fromRGB(255, 60, 60), "🔪 [Murderer]" end
+    if tool == "Gun" or p == getSheriff() then return Color3.fromRGB(60, 160, 255), "🔫 [Sheriff]" end
+    return Color3.fromRGB(60, 220, 100), " innocent [Inocente]"
 end
 
 -- ==========================================
--- PEGAR ARMA (CORRIGIDO)
+-- 🔫 PEGAR ARMA DO CHÃO
 -- ==========================================
 local function grabGunFromFloor()
     local myChar = LocalPlayer.Character
@@ -513,7 +595,6 @@ local function grabGunFromFloor()
                 task.wait()
                 firetouchinterest(myRoot, targetPart, 1)
             end
-            
             myRoot.CFrame = targetPart.CFrame + Vector3.new(0, 2, 0)
             task.wait(0.1)
             myRoot.CFrame = savedCFrame
@@ -522,17 +603,115 @@ local function grabGunFromFloor()
 end
 
 -- ==========================================
--- ABA COMBATE (AIMBOT NORMAL)
+-- ⚔️ ABA COMBATE / VELOCIDADE & PULO
 -- ==========================================
-local AimbotButton = addButton(pages.Combat, "Aimbot (E): DESLIGADO")
-local GrabGunButton = addButton(pages.Combat, "Pegar Arma do Chão (G)")
-local TpNearestButton = addButton(pages.Combat, "Teleportar Próximo (R)")
-local SelectPlayerButton = addButton(pages.Combat, "Selecionar Jogador para TP")
+local AimbotButton = addButton(pages.Combat, "🎯 Aimbot (Tecla E): ❌ DESLIGADO")
+local GrabGunButton = addButton(pages.Combat, "🔫 Pegar Arma do Chão (Tecla G)")
+local TpNearestButton = addButton(pages.Combat, "⚡ Teleportar Próximo (Tecla R)")
+local SelectPlayerButton = addButton(pages.Combat, "👥 Selecionar Jogador para TP ➔")
+
+addLabel(pages.Combat, "🏃‍♂️ Configurações de Movimento (0 a 100):")
+
+local customWalkSpeed = 16
+local customJumpPower = 50
+local speedJumpEnabled = false
+
+local SpeedJumpToggleButton = addButton(pages.Combat, "🚀 Modo Velocidade/Pulo: ❌ DESLIGADO")
+
+SpeedJumpToggleButton.MouseButton1Click:Connect(function()
+    speedJumpEnabled = not speedJumpEnabled
+    SpeedJumpToggleButton.Text = speedJumpEnabled and "🚀 Modo Velocidade/Pulo: ✅ LIGADO" or "🚀 Modo Velocidade/Pulo: ❌ DESLIGADO"
+    SpeedJumpToggleButton.BackgroundColor3 = speedJumpEnabled and Color3.fromRGB(40, 140, 70) or Color3.fromRGB(30, 30, 42)
+    
+    if not speedJumpEnabled then
+        local hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+        if hum then
+            hum.WalkSpeed = 16
+            hum.JumpPower = 50
+        end
+    end
+end)
+
+local function createInputRow(labelText, defaultVal, callback)
+    local row = Instance.new("Frame")
+    row.Size = UDim2.new(1, 0, 0, 36)
+    row.BackgroundTransparency = 1
+    row.Parent = pages.Combat
+
+    local lbl = Instance.new("TextLabel")
+    lbl.Size = UDim2.new(0.6, 0, 1, 0)
+    lbl.Text = labelText
+    lbl.TextColor3 = Color3.fromRGB(220, 220, 230)
+    lbl.TextSize = 12
+    lbl.Font = Enum.Font.GothamMedium
+    lbl.BackgroundTransparency = 1
+    lbl.TextXAlignment = Enum.TextXAlignment.Left
+    lbl.Parent = row
+
+    local box = Instance.new("TextBox")
+    box.Size = UDim2.new(0.4, 0, 1, 0)
+    box.Position = UDim2.new(0.6, 0, 0, 0)
+    box.Text = tostring(defaultVal)
+    box.TextColor3 = Color3.fromRGB(255, 255, 255)
+    box.TextSize = 12
+    box.Font = Enum.Font.GothamBold
+    box.BackgroundColor3 = Color3.fromRGB(30, 30, 42)
+    box.BackgroundTransparency = 0.25
+    box.BorderSizePixel = 0
+    box.Parent = row
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 8)
+    corner.Parent = box
+
+    box.FocusLost:Connect(function()
+        local num = tonumber(box.Text)
+        if num then
+            num = math.clamp(num, 0, 100)
+            box.Text = tostring(num)
+            callback(num)
+        else
+            box.Text = tostring(defaultVal)
+        end
+    end)
+    return box
+end
+
+createInputRow("⚡ Velocidade (0-100):", 16, function(val)
+    customWalkSpeed = val
+end)
+
+createInputRow("🦘 Pulo (0-100):", 50, function(val)
+    customJumpPower = val
+end)
+
+local ResetSpeedBtn = addButton(pages.Combat, "🔄 Voltar Velocidade/Pulo ao Normal")
+ResetSpeedBtn.MouseButton1Click:Connect(function()
+    speedJumpEnabled = false
+    SpeedJumpToggleButton.Text = "🚀 Modo Velocidade/Pulo: ❌ DESLIGADO"
+    SpeedJumpToggleButton.BackgroundColor3 = Color3.fromRGB(30, 30, 42)
+    customWalkSpeed = 16
+    customJumpPower = 50
+    local hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+    if hum then
+        hum.WalkSpeed = 16
+        hum.JumpPower = 50
+    end
+end)
+
+speedJumpConnection = RunService.RenderStepped:Connect(function()
+    if not _G.PaulinoMenuRunning or not speedJumpEnabled then return end
+    local hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+    if hum then
+        hum.WalkSpeed = customWalkSpeed
+        hum.JumpPower = customJumpPower
+    end
+end)
 
 AimbotButton.MouseButton1Click:Connect(function()
     aimbotActive = not aimbotActive
-    AimbotButton.Text = aimbotActive and "Aimbot (E): LIGADO" or "Aimbot (E): DESLIGADO"
-    AimbotButton.BackgroundColor3 = aimbotActive and Color3.fromRGB(50, 160, 80) or Color3.fromRGB(35, 35, 42)
+    AimbotButton.Text = aimbotActive and "🎯 Aimbot (Tecla E): ✅ LIGADO" or "🎯 Aimbot (Tecla E): ❌ DESLIGADO"
+    AimbotButton.BackgroundColor3 = aimbotActive and Color3.fromRGB(40, 140, 70) or Color3.fromRGB(30, 30, 42)
 end)
 
 RunService.RenderStepped:Connect(function()
@@ -568,21 +747,21 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     elseif input.KeyCode == Enum.KeyCode.R then teleportToNearest()
     elseif input.KeyCode == Enum.KeyCode.E then
         aimbotActive = not aimbotActive
-        AimbotButton.Text = aimbotActive and "Aimbot (E): LIGADO" or "Aimbot (E): DESLIGADO"
-        AimbotButton.BackgroundColor3 = aimbotActive and Color3.fromRGB(50, 160, 80) or Color3.fromRGB(35, 35, 42)
+        AimbotButton.Text = aimbotActive and "🎯 Aimbot (Tecla E): ✅ LIGADO" or "🎯 Aimbot (Tecla E): ❌ DESLIGADO"
+        AimbotButton.BackgroundColor3 = aimbotActive and Color3.fromRGB(40, 140, 70) or Color3.fromRGB(30, 30, 42)
     end
 end)
 
 -- ==========================================
--- FUNÇÃO AUXILIAR: CRIAR LISTA CINEMATOGRÁFICA
+-- 💫 LISTAS FLUTUANTES CINEMATOGRÁFICAS
 -- ==========================================
 local activeCinematicLists = {}
 
 local function createCinematicList()
     local container = Instance.new("Frame")
-    container.Size = UDim2.new(0, 190, 0, 190)
+    container.Size = UDim2.new(0, 200, 0, 200)
     container.Position = UDim2.new(1, 10, 0, 0)
-    container.BackgroundColor3 = Color3.fromRGB(12, 12, 16)
+    container.BackgroundColor3 = Color3.fromRGB(12, 12, 18)
     container.BackgroundTransparency = 0.15
     container.BorderSizePixel = 0
     container.Visible = false
@@ -592,17 +771,15 @@ local function createCinematicList()
     corner.CornerRadius = UDim.new(0, 12)
     corner.Parent = container
 
+    local stroke = Instance.new("UIStroke")
+    stroke.Color = Color3.fromRGB(100, 80, 200)
+    stroke.Transparency = 0.3
+    stroke.Thickness = 1.5
+    stroke.Parent = container
+
     local blur = Instance.new("BlurEffect")
     blur.Size = 0
     blur.Parent = Camera
-
-    local vignette = Instance.new("ImageLabel")
-    vignette.Size = UDim2.new(1, 0, 1, 0)
-    vignette.BackgroundTransparency = 1
-    vignette.Image = "rbxassetid://4593925761"
-    vignette.ImageColor3 = Color3.fromRGB(0, 0, 0)
-    vignette.ImageTransparency = 0.5
-    vignette.Parent = container
 
     local scroll = Instance.new("ScrollingFrame")
     scroll.Size = UDim2.new(1, -10, 1, -10)
@@ -614,7 +791,7 @@ local function createCinematicList()
     scroll.Parent = container
 
     local layout = Instance.new("UIListLayout")
-    layout.Padding = UDim.new(0, 4)
+    layout.Padding = UDim.new(0, 5)
     layout.Parent = scroll
 
     layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
@@ -639,7 +816,6 @@ local function createCinematicList()
     return container, scroll
 end
 
--- Fechar menus abertos ao clicar fora deles
 UserInputService.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
         local mousePos = input.Position
@@ -647,10 +823,8 @@ UserInputService.InputBegan:Connect(function(input)
             if listFrame.Visible then
                 local absPos = listFrame.AbsolutePosition
                 local absSize = listFrame.AbsoluteSize
-                
                 local insideX = mousePos.X >= absPos.X and mousePos.X <= (absPos.X + absSize.X)
                 local insideY = mousePos.Y >= absPos.Y and mousePos.Y <= (absPos.Y + absSize.Y)
-                
                 if not (insideX and insideY) then
                     listFrame.Visible = false
                 end
@@ -660,7 +834,7 @@ UserInputService.InputBegan:Connect(function(input)
 end)
 
 -- ==========================================
--- LISTA DE JOGADORES (COMBATE - TP)
+-- 👥 LISTA DE JOGADORES (TP)
 -- ==========================================
 local PlayerListFrame, PlayerScroll = createCinematicList()
 
@@ -672,18 +846,18 @@ SelectPlayerButton.MouseButton1Click:Connect(function()
             if p ~= LocalPlayer then
                 local color, role = getPlayerColorAndRole(p)
                 local btn = Instance.new("TextButton")
-                btn.Size = UDim2.new(1, 0, 0, 32)
-                btn.Text = "  " .. p.Name .. " " .. role
+                btn.Size = UDim2.new(1, 0, 0, 34)
+                btn.Text = "👤 " .. p.Name .. " " .. role
                 btn.TextColor3 = color
                 btn.TextSize = 11
                 btn.Font = Enum.Font.GothamBold
-                btn.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
+                btn.BackgroundColor3 = Color3.fromRGB(22, 22, 32)
                 btn.BackgroundTransparency = 0.3
                 btn.BorderSizePixel = 0
                 btn.Parent = PlayerScroll
                 
                 local btnCorner = Instance.new("UICorner")
-                btnCorner.CornerRadius = UDim.new(0, 6)
+                btnCorner.CornerRadius = UDim.new(0, 8)
                 btnCorner.Parent = btn
                 
                 btn.MouseButton1Click:Connect(function()
@@ -698,9 +872,9 @@ SelectPlayerButton.MouseButton1Click:Connect(function()
 end)
 
 -- ==========================================
--- ABA FARM (XP LOBBY/AFK)
+-- ⚡ ABA FARM DE XP
 -- ==========================================
-local XpFarmButton = addButton(pages.Farm, "Farm de XP: DESLIGADO")
+local XpFarmButton = addButton(pages.Farm, "⚡ Farm de XP (Lobby): ❌ DESLIGADO")
 
 local function createSafePlatform()
     if not safePlatform then
@@ -715,8 +889,8 @@ end
 
 XpFarmButton.MouseButton1Click:Connect(function()
     xpFarmAtivo = not xpFarmAtivo
-    XpFarmButton.Text = xpFarmAtivo and "Farm de XP: LIGADO" or "Farm de XP: DESLIGADO"
-    XpFarmButton.BackgroundColor3 = xpFarmAtivo and Color3.fromRGB(50, 160, 80) or Color3.fromRGB(35, 35, 42)
+    XpFarmButton.Text = xpFarmAtivo and "⚡ Farm de XP (Lobby): ✅ LIGADO" or "⚡ Farm de XP (Lobby): ❌ DESLIGADO"
+    XpFarmButton.BackgroundColor3 = xpFarmAtivo and Color3.fromRGB(40, 140, 70) or Color3.fromRGB(30, 30, 42)
     
     if xpFarmAtivo then
         createSafePlatform()
@@ -743,9 +917,9 @@ XpFarmButton.MouseButton1Click:Connect(function()
 end)
 
 -- ==========================================
--- ABA VISUAL / ESP
+-- 👁️ ABA VISUAL / ESP
 -- ==========================================
-local EspButton = addButton(pages.Visuals, "ESP: DESLIGADO")
+local EspButton = addButton(pages.Visuals, "👁️ ESP Jogadores & Armas: ❌ DESLIGADO")
 
 local function clearESP()
     for _, p in ipairs(Players:GetPlayers()) do
@@ -768,8 +942,8 @@ end
 
 EspButton.MouseButton1Click:Connect(function()
     espActive = not espActive
-    EspButton.Text = espActive and "ESP: LIGADO" or "ESP: DESLIGADO"
-    EspButton.BackgroundColor3 = espActive and Color3.fromRGB(50, 160, 80) or Color3.fromRGB(35, 35, 42)
+    EspButton.Text = espActive and "👁️ ESP Jogadores & Armas: ✅ LIGADO" or "👁️ ESP Jogadores & Armas: ❌ DESLIGADO"
+    EspButton.BackgroundColor3 = espActive and Color3.fromRGB(40, 140, 70) or Color3.fromRGB(30, 30, 42)
     if not espActive then clearESP() end
 end)
 
@@ -791,7 +965,7 @@ task.spawn(function()
                     local hrp = p.Character.HumanoidRootPart
                     local bb = hrp:FindFirstChild("PaulinoBillboard") or Instance.new("BillboardGui", hrp)
                     bb.Name = "PaulinoBillboard"
-                    bb.Size = UDim2.new(0, 120, 0, 40)
+                    bb.Size = UDim2.new(0, 130, 0, 42)
                     bb.StudsOffset = Vector3.new(0, -3.5, 0)
                     bb.AlwaysOnTop = true
                     
@@ -802,13 +976,13 @@ task.spawn(function()
                     lbl.TextColor3 = color
                     lbl.Font = Enum.Font.GothamBold
                     lbl.TextSize = 12
-                    lbl.Text = p.Name .. "\n" .. role
+                    lbl.Text = "👤 " .. p.Name .. "\n" .. role
                 end
             end
             
             for _, obj in ipairs(Workspace:GetDescendants()) do
                 if (obj.Name == "GunDrop" or obj.Name:lower():find("gundrop")) and obj:IsA("BasePart") then
-                    local gunColor = Color3.fromRGB(0, 170, 255)
+                    local gunColor = Color3.fromRGB(0, 180, 255)
                     
                     local hl = obj:FindFirstChild("PaulinoGunHighlight") or Instance.new("Highlight", obj)
                     hl.Name = "PaulinoGunHighlight"
@@ -820,7 +994,7 @@ task.spawn(function()
 
                     local bb = obj:FindFirstChild("PaulinoGunBillboard") or Instance.new("BillboardGui", obj)
                     bb.Name = "PaulinoGunBillboard"
-                    bb.Size = UDim2.new(0, 120, 0, 30)
+                    bb.Size = UDim2.new(0, 130, 0, 30)
                     bb.StudsOffset = Vector3.new(0, -2, 0)
                     bb.AlwaysOnTop = true
 
@@ -831,7 +1005,7 @@ task.spawn(function()
                     lbl.TextColor3 = gunColor
                     lbl.Font = Enum.Font.GothamBold
                     lbl.TextSize = 12
-                    lbl.Text = "[Arma Droppada]"
+                    lbl.Text = "🔫 [Arma Droppada]"
                 end
             end
         else
@@ -842,19 +1016,19 @@ task.spawn(function()
 end)
 
 -- ==========================================
--- ABA CÂMERA & FREECAM
+-- 📷 ABA CÂMERA & FREECAM
 -- ==========================================
-local FreecamLivreBtn = addButton(pages.Camera, "Freecam Livre: DESLIGADO")
-local FreecamPlayerButton = addButton(pages.Camera, "Espectar Jogador")
-local ResetCamButton = addButton(pages.Camera, "Voltar Câmera ao Normal")
+local FreecamLivreBtn = addButton(pages.Camera, "📷 Freecam Livre: ❌ DESLIGADO")
+local FreecamPlayerButton = addButton(pages.Camera, "👁️ Espectar Jogador ➔")
+local ResetCamButton = addButton(pages.Camera, "🔄 Voltar Câmera ao Normal")
 
 local freecamRotX = 0
 local freecamRotY = 0
 
 FreecamLivreBtn.MouseButton1Click:Connect(function()
     freecamActive = not freecamActive
-    FreecamLivreBtn.Text = freecamActive and "Freecam Livre: LIGADO" or "Freecam Livre: DESLIGADO"
-    FreecamLivreBtn.BackgroundColor3 = freecamActive and Color3.fromRGB(50, 160, 80) or Color3.fromRGB(35, 35, 42)
+    FreecamLivreBtn.Text = freecamActive and "📷 Freecam Livre: ✅ LIGADO" or "📷 Freecam Livre: ❌ DESLIGADO"
+    FreecamLivreBtn.BackgroundColor3 = freecamActive and Color3.fromRGB(40, 140, 70) or Color3.fromRGB(30, 30, 42)
     
     if freecamActive then
         Camera.CameraType = Enum.CameraType.Scriptable
@@ -866,7 +1040,6 @@ FreecamLivreBtn.MouseButton1Click:Connect(function()
         
         freecamConn = RunService.RenderStepped:Connect(function()
             if not freecamActive then return end
-            
             if UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton2) then
                 UserInputService.MouseBehavior = Enum.MouseBehavior.LockCurrentPosition
                 local delta = UserInputService:GetMouseDelta()
@@ -901,7 +1074,7 @@ FreecamLivreBtn.MouseButton1Click:Connect(function()
 end)
 
 local CameraListFrame, CameraScroll = createCinematicList()
-CameraListFrame.Position = UDim2.new(1, 10, 0, 50)
+CameraListFrame.Position = UDim2.new(1, 10, 0, 45)
 
 FreecamPlayerButton.MouseButton1Click:Connect(function()
     CameraListFrame.Visible = not CameraListFrame.Visible
@@ -911,33 +1084,33 @@ FreecamPlayerButton.MouseButton1Click:Connect(function()
             if p ~= LocalPlayer then
                 local color, role = getPlayerColorAndRole(p)
                 local btn = Instance.new("TextButton")
-                btn.Size = UDim2.new(1, 0, 0, 32)
-                btn.Text = "  👁️ " .. p.Name
+                btn.Size = UDim2.new(1, 0, 0, 34)
+                btn.Text = "📺 " .. p.Name
                 btn.TextColor3 = color
                 btn.TextSize = 11
                 btn.Font = Enum.Font.GothamBold
-                btn.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
+                btn.BackgroundColor3 = Color3.fromRGB(22, 22, 32)
                 btn.BackgroundTransparency = 0.3
                 btn.BorderSizePixel = 0
                 btn.Parent = CameraScroll
                 
                 local btnCorner = Instance.new("UICorner")
-                btnCorner.CornerRadius = UDim.new(0, 6)
+                btnCorner.CornerRadius = UDim.new(0, 8)
                 btnCorner.Parent = btn
                 
                 btn.MouseButton1Click:Connect(function()
                     if freecamActive then
                         freecamActive = false
-                        FreecamLivreBtn.Text = "Freecam Livre: DESLIGADO"
-                        FreecamLivreBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
+                        FreecamLivreBtn.Text = "📷 Freecam Livre: ❌ DESLIGADO"
+                        FreecamLivreBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 42)
                         if freecamConn then freecamConn:Disconnect() freecamConn = nil end
                         UserInputService.MouseBehavior = Enum.MouseBehavior.Default
                     end
                     if p.Character and p.Character:FindFirstChildOfClass("Humanoid") then
                         Camera.CameraType = Enum.CameraType.Custom
                         Camera.CameraSubject = p.Character:FindFirstChildOfClass("Humanoid")
-                        FreecamPlayerButton.Text = "Espectando: " .. p.Name
-                        FreecamPlayerButton.BackgroundColor3 = Color3.fromRGB(50, 160, 80)
+                        FreecamPlayerButton.Text = "📺 Espectando: " .. p.Name
+                        FreecamPlayerButton.BackgroundColor3 = Color3.fromRGB(40, 140, 70)
                     end
                     CameraListFrame.Visible = false
                 end)
@@ -949,27 +1122,27 @@ end)
 ResetCamButton.MouseButton1Click:Connect(function()
     if freecamActive then
         freecamActive = false
-        FreecamLivreBtn.Text = "Freecam Livre: DESLIGADO"
-        FreecamLivreBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
+        FreecamLivreBtn.Text = "📷 Freecam Livre: ❌ DESLIGADO"
+        FreecamLivreBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 42)
         if freecamConn then freecamConn:Disconnect() freecamConn = nil end
         UserInputService.MouseBehavior = Enum.MouseBehavior.Default
     end
     if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
         Camera.CameraType = Enum.CameraType.Custom
         Camera.CameraSubject = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-        FreecamPlayerButton.Text = "Espectar Jogador"
-        FreecamPlayerButton.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
+        FreecamPlayerButton.Text = "👁️ Espectar Jogador ➔"
+        FreecamPlayerButton.BackgroundColor3 = Color3.fromRGB(30, 30, 42)
     end
 end)
 
 -- ==========================================
--- ABA TROLL & FLING MATAR
+-- 🤡 ABA TROLL & FLING MATAR
 -- ==========================================
 local KillMurderBtn = addButton(pages.Troll, "⚔️ Matar Murderer (Fling)")
 local KillSheriffBtn = addButton(pages.Troll, "🛡️ Matar Sheriff (Fling)")
-local FlingSelectBtn = addButton(pages.Troll, "🎯 Fling em Jogador Selecionado")
-local TrollSheriffBtn = addButton(pages.Troll, "Paralisar Sheriff: DESLIGADO")
-local TrollMurderBtn = addButton(pages.Troll, "Paralisar Murderer: DESLIGADO")
+local FlingSelectBtn = addButton(pages.Troll, "🎯 Fling em Jogador Selecionado ➔")
+local TrollSheriffBtn = addButton(pages.Troll, "❄️ Paralisar Sheriff: ❌ DESLIGADO")
+local TrollMurderBtn = addButton(pages.Troll, "❄️ Paralisar Murderer: ❌ DESLIGADO")
 
 local function performFling(targetP, duration)
     if not targetP or not targetP.Character then return end
@@ -1000,14 +1173,14 @@ local function performFling(targetP, duration)
 end
 
 local function ativarFlingTemporario(btn, textoOriginal, getAlvoFunc)
-    if btn.BackgroundColor3 == Color3.fromRGB(50, 160, 80) then return end
-    btn.Text = textoOriginal .. ": ATIVO..."
-    btn.BackgroundColor3 = Color3.fromRGB(50, 160, 80)
+    if btn.BackgroundColor3 == Color3.fromRGB(40, 140, 70) then return end
+    btn.Text = textoOriginal .. " ⏳ [A Tentar...]"
+    btn.BackgroundColor3 = Color3.fromRGB(40, 140, 70)
     
     task.spawn(function()
         performFling(getAlvoFunc(), 1.5)
         btn.Text = textoOriginal
-        btn.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
+        btn.BackgroundColor3 = Color3.fromRGB(30, 30, 42)
     end)
 end
 
@@ -1020,7 +1193,7 @@ KillSheriffBtn.MouseButton1Click:Connect(function()
 end)
 
 local TrollListFrame, TrollScroll = createCinematicList()
-TrollListFrame.Position = UDim2.new(1, 10, 0, 120)
+TrollListFrame.Position = UDim2.new(1, 10, 0, 115)
 
 FlingSelectBtn.MouseButton1Click:Connect(function()
     TrollListFrame.Visible = not TrollListFrame.Visible
@@ -1030,23 +1203,23 @@ FlingSelectBtn.MouseButton1Click:Connect(function()
             if p ~= LocalPlayer then
                 local color, role = getPlayerColorAndRole(p)
                 local btn = Instance.new("TextButton")
-                btn.Size = UDim2.new(1, 0, 0, 32)
-                btn.Text = "  💥 " .. p.Name
+                btn.Size = UDim2.new(1, 0, 0, 34)
+                btn.Text = "💥 " .. p.Name
                 btn.TextColor3 = color
                 btn.TextSize = 11
                 btn.Font = Enum.Font.GothamBold
-                btn.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
+                btn.BackgroundColor3 = Color3.fromRGB(22, 22, 32)
                 btn.BackgroundTransparency = 0.3
                 btn.BorderSizePixel = 0
                 btn.Parent = TrollScroll
                 
                 local btnCorner = Instance.new("UICorner")
-                btnCorner.CornerRadius = UDim.new(0, 6)
+                btnCorner.CornerRadius = UDim.new(0, 8)
                 btnCorner.Parent = btn
                 
                 btn.MouseButton1Click:Connect(function()
                     TrollListFrame.Visible = false
-                    ativarFlingTemporario(FlingSelectBtn, "🎯 Fling em Jogador Selecionado", function() return p end)
+                    ativarFlingTemporario(FlingSelectBtn, "🎯 Fling em Jogador Selecionado ➔", function() return p end)
                 end)
             end
         end
@@ -1057,7 +1230,6 @@ local function freezeTargetReal(p)
     if p and p.Character then
         local hrp = p.Character:FindFirstChild("HumanoidRootPart")
         local hum = p.Character:FindFirstChildOfClass("Humanoid")
-        
         if hrp then
             if not p.Character:FindFirstChild("FrozenPos") then
                 local posVal = Instance.new("CFrameValue")
@@ -1065,13 +1237,11 @@ local function freezeTargetReal(p)
                 posVal.Value = hrp.CFrame
                 posVal.Parent = p.Character
             end
-            
             local targetPos = p.Character.FrozenPos.Value
             hrp.CFrame = targetPos
             hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
             hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
         end
-        
         if hum then
             hum.WalkSpeed = 0
             hum.JumpPower = 0
@@ -1081,8 +1251,8 @@ end
 
 TrollSheriffBtn.MouseButton1Click:Connect(function()
     local active = TrollSheriffBtn.Text:find("DESLIGADO")
-    TrollSheriffBtn.Text = active and "Paralisar Sheriff: LIGADO" or "Paralisar Sheriff: DESLIGADO"
-    TrollSheriffBtn.BackgroundColor3 = active and Color3.fromRGB(50, 160, 80) or Color3.fromRGB(35, 35, 42)
+    TrollSheriffBtn.Text = active and "❄️ Paralisar Sheriff: ✅ LIGADO" or "❄️ Paralisar Sheriff: ❌ DESLIGADO"
+    TrollSheriffBtn.BackgroundColor3 = active and Color3.fromRGB(40, 140, 70) or Color3.fromRGB(30, 30, 42)
     if active then
         trollSheriffConnection = RunService.RenderStepped:Connect(function() freezeTargetReal(getSheriff()) end)
     else
@@ -1094,8 +1264,8 @@ end)
 
 TrollMurderBtn.MouseButton1Click:Connect(function()
     local active = TrollMurderBtn.Text:find("DESLIGADO")
-    TrollMurderBtn.Text = active and "Paralisar Murderer: LIGADO" or "Paralisar Murderer: DESLIGADO"
-    TrollMurderBtn.BackgroundColor3 = active and Color3.fromRGB(50, 160, 80) or Color3.fromRGB(35, 35, 42)
+    TrollMurderBtn.Text = active and "❄️ Paralisar Murderer: ✅ LIGADO" or "❄️ Paralisar Murderer: ❌ DESLIGADO"
+    TrollMurderBtn.BackgroundColor3 = active and Color3.fromRGB(40, 140, 70) or Color3.fromRGB(30, 30, 42)
     if active then
         trollMurderConnection = RunService.RenderStepped:Connect(function() freezeTargetReal(getMurderer()) end)
     else
