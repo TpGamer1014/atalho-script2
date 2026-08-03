@@ -161,20 +161,20 @@ MinCorner.CornerRadius = UDim.new(0, 6)
 MinCorner.Parent = MinimizeButton
 
 -- ==========================================
--- BOTÃO MINIMIZADO (MAIS PEQUENO, REDONDO, GROSSO E TRANSPARENTE)
+-- BOTÃO MINIMIZADO (PÍLULA)
 -- ==========================================
 local OpenButtonBg = Instance.new("Frame")
 OpenButtonBg.Name = "OpenButtonBg"
-OpenButtonBg.Size = UDim2.new(0, 95, 0, 24) -- Mais pequeno e compacto
+OpenButtonBg.Size = UDim2.new(0, 95, 0, 24)
 OpenButtonBg.Position = UDim2.new(0, 10, 0, 200)
 OpenButtonBg.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-OpenButtonBg.BackgroundTransparency = 0.5 -- Mais transparente
+OpenButtonBg.BackgroundTransparency = 0.5
 OpenButtonBg.BorderSizePixel = 0
 OpenButtonBg.Visible = false
 OpenButtonBg.Parent = ScreenGui
 
 local OpenCorner = Instance.new("UICorner")
-OpenCorner.CornerRadius = UDim.new(1, 0) -- Perfeitamente redondo (pílula)
+OpenCorner.CornerRadius = UDim.new(1, 0)
 OpenCorner.Parent = OpenButtonBg
 
 local OpenGradient = Instance.new("UIGradient")
@@ -191,7 +191,7 @@ OpenGradient.Parent = OpenButtonBg
 local OpenStroke = Instance.new("UIStroke")
 OpenStroke.Color = Color3.fromRGB(255, 255, 255)
 OpenStroke.Transparency = 0.1
-OpenStroke.Thickness = 2.5 -- Borda bem mais grossa
+OpenStroke.Thickness = 2.5
 OpenStroke.Parent = OpenButtonBg
 
 local OpenButton = Instance.new("TextButton")
@@ -753,63 +753,28 @@ task.spawn(function()
     end
 end)
 
-local FreecamLivreBtn = addButton(pages.Camera, "Freecam Livre: DESLIGADO")
+local FreecamBtn = addButton(pages.Camera, "Freecam: DESLIGADO")
 local ResetCamButton = addButton(pages.Camera, "Voltar Câmera ao Normal")
 
-local freecamRotX = 0
-local freecamRotY = 0
-
-FreecamLivreBtn.MouseButton1Click:Connect(function()
+FreecamBtn.MouseButton1Click:Connect(function()
     freecamActive = not freecamActive
-    FreecamLivreBtn.Text = freecamActive and "Freecam Livre: LIGADO" or "Freecam Livre: DESLIGADO"
-    FreecamLivreBtn.BackgroundColor3 = freecamActive and Color3.fromRGB(40, 180, 90) or Color3.fromRGB(255, 255, 255)
-    FreecamLivreBtn.TextColor3 = freecamActive and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(25, 25, 35)
+    FreecamBtn.Text = freecamActive and "Freecam: LIGADO" or "Freecam: DESLIGADO"
+    FreecamBtn.BackgroundColor3 = freecamActive and Color3.fromRGB(40, 180, 90) or Color3.fromRGB(255, 255, 255)
+    FreecamBtn.TextColor3 = freecamActive and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(25, 25, 35)
     
     if freecamActive then
         Camera.CameraType = Enum.CameraType.Scriptable
-        local rx, ry, _ = Camera.CFrame:ToOrientation()
-        freecamRotX = rx
-        freecamRotY = ry
-        
-        if freecamConn then freecamConn:Disconnect() end
-        
-        freecamConn = RunService.RenderStepped:Connect(function()
-            if not freecamActive then return end
-            
-            if UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton2) then
-                UserInputService.MouseBehavior = Enum.MouseBehavior.LockCurrent
-                local delta = UserInputService:GetMouseDelta()
-                freecamRotX = math.clamp(freecamRotX - delta.Y * 0.003, -math.rad(89), math.rad(89))
-                freecamRotY = freecamRotY - delta.X * 0.003
-            else
-                UserInputService.MouseBehavior = Enum.MouseBehavior.Default
-            end
-            
-            local moveDir = Vector3.zero
-            if UserInputService:IsKeyDown(Enum.KeyCode.W) then moveDir = moveDir + Vector3.new(0, 0, -1) end
-            if UserInputService:IsKeyDown(Enum.KeyCode.S) then moveDir = moveDir + Vector3.new(0, 0, 1) end
-            if UserInputService:IsKeyDown(Enum.KeyCode.A) then moveDir = moveDir + Vector3.new(-1, 0, 0) end
-            if UserInputService:IsKeyDown(Enum.KeyCode.D) then moveDir = moveDir + Vector3.new(1, 0, 0) end
-            
-            local rotCF = CFrame.fromOrientation(freecamRotX, freecamRotY, 0)
-            Camera.CFrame = Camera.CFrame + (rotCF * moveDir * 1.5)
-            Camera.CFrame = CFrame.new(Camera.CFrame.Position) * rotCF
-        end)
     else
-        if freecamConn then freecamConn:Disconnect() end
         Camera.CameraType = Enum.CameraType.Custom
-        UserInputService.MouseBehavior = Enum.MouseBehavior.Default
     end
 end)
 
 ResetCamButton.MouseButton1Click:Connect(function()
     freecamActive = false
-    FreecamLivreBtn.Text = "Freecam Livre: DESLIGADO"
-    FreecamLivreBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    FreecamLivreBtn.TextColor3 = Color3.fromRGB(25, 25, 35)
-    if freecamConn then freecamConn:Disconnect() end
+    FreecamBtn.Text = "Freecam: DESLIGADO"
+    FreecamBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    FreecamBtn.TextColor3 = Color3.fromRGB(25, 25, 35)
     Camera.CameraType = Enum.CameraType.Custom
-    UserInputService.MouseBehavior = Enum.MouseBehavior.Default
 end)
 
 local FlingBtn = addButton(pages.Troll, "Fling All Players: DESLIGADO")
