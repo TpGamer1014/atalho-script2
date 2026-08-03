@@ -161,37 +161,37 @@ MinCorner.CornerRadius = UDim.new(0, 6)
 MinCorner.Parent = MinimizeButton
 
 -- ==========================================
--- BOTÃO MINIMIZADO (ESTILO PÍLULA TRANSPARENTE COM GRADIENTE)
+-- BOTÃO MINIMIZADO (MAIS PEQUENO, REDONDO, GROSSO E TRANSPARENTE)
 -- ==========================================
 local OpenButtonBg = Instance.new("Frame")
 OpenButtonBg.Name = "OpenButtonBg"
-OpenButtonBg.Size = UDim2.new(0, 110, 0, 28)
+OpenButtonBg.Size = UDim2.new(0, 95, 0, 24) -- Mais pequeno e compacto
 OpenButtonBg.Position = UDim2.new(0, 10, 0, 200)
 OpenButtonBg.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-OpenButtonBg.BackgroundTransparency = 0.4
+OpenButtonBg.BackgroundTransparency = 0.5 -- Mais transparente
 OpenButtonBg.BorderSizePixel = 0
 OpenButtonBg.Visible = false
 OpenButtonBg.Parent = ScreenGui
 
 local OpenCorner = Instance.new("UICorner")
-OpenCorner.CornerRadius = UDim.new(1, 0)
+OpenCorner.CornerRadius = UDim.new(1, 0) -- Perfeitamente redondo (pílula)
 OpenCorner.Parent = OpenButtonBg
 
 local OpenGradient = Instance.new("UIGradient")
 OpenGradient.Color = ColorSequence.new({
     ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(210, 210, 210))
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 200, 200))
 })
 OpenGradient.Transparency = NumberSequence.new({
-    NumberSequenceKeypoint.new(0, 0.2),
-    NumberSequenceKeypoint.new(1, 0.5)
+    NumberSequenceKeypoint.new(0, 0.1),
+    NumberSequenceKeypoint.new(1, 0.6)
 })
 OpenGradient.Parent = OpenButtonBg
 
 local OpenStroke = Instance.new("UIStroke")
 OpenStroke.Color = Color3.fromRGB(255, 255, 255)
-OpenStroke.Transparency = 0.2
-OpenStroke.Thickness = 2
+OpenStroke.Transparency = 0.1
+OpenStroke.Thickness = 2.5 -- Borda bem mais grossa
 OpenStroke.Parent = OpenButtonBg
 
 local OpenButton = Instance.new("TextButton")
@@ -200,7 +200,7 @@ OpenButton.Size = UDim2.new(1, 0, 1, 0)
 OpenButton.BackgroundTransparency = 1
 OpenButton.Text = "☀️  🌸 Paulin"
 OpenButton.TextColor3 = Color3.fromRGB(20, 20, 30)
-OpenButton.TextSize = 12
+OpenButton.TextSize = 11
 OpenButton.Font = Enum.Font.GothamBold
 OpenButton.Parent = OpenButtonBg
 
