@@ -1,12 +1,11 @@
 -- ==========================================
--- PAULINO MM2 - SCRIPT COMPLETO
+-- PAULINO MM2 - SCRIPT COMPLETO (FIX DE CARREGAMENTO)
 -- ==========================================
 
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local CoreGui = game:GetService("CoreGui")
 local RunService = game:GetService("RunService")
-local HttpService = game:GetService("HttpService")
 local UserInputService = game:GetService("UserInputService")
 
 local LocalPlayer = Players.LocalPlayer
@@ -21,7 +20,6 @@ local aimbotActive = false
 local freecamActive = false
 local aFazerFling = false
 
-local noclipConnection = nil
 local antiFlingConnection = nil
 local freecamConn = nil
 
@@ -58,7 +56,7 @@ local function iniciarAntiFling()
         end
     end)
 end
-iniciarAntiFling()
+pcall(iniciarAntiFling)
 
 -- ==========================================
 -- CRIAÇÃO DA GUI
@@ -67,7 +65,7 @@ local function getGuiContainer()
     if gethui then return gethui() end
     local success, coreGui = pcall(function() return CoreGui end)
     if success and coreGui then return coreGui end
-    return LocalPlayer:WaitForChild("PlayerGui")
+    return LocalPlayer:FindFirstChildOfClass("PlayerGui") or LocalPlayer:WaitForChild("PlayerGui")
 end
 
 local parentContainer = getGuiContainer()
@@ -370,48 +368,49 @@ local function getPlayerColorAndRole(p)
 end
 
 -- ==========================================
--- PEGAR ARMA (COM RETORNO GARANTIDO)
+-- PEGAR ARMA (OTIMIZADO E PROTEGIDO)
 -- ==========================================
 local function grabGunFromFloor()
-    local myChar = LocalPlayer.Character
-    local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
-    if not myRoot then return end
-    
-    local gunPart = nil
-    for _, obj in ipairs(Workspace:GetDescendants()) do
-        if obj.Name == "GunDrop" or obj.Name:lower():find("gundrop") then
-            if obj:IsA("BasePart") then
-                gunPart = obj
-                break
-            elseif obj:IsA("Model") then
-                gunPart = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
-                if gunPart then break end
-            end
-        end
-    end
-    
-    if gunPart then
-        local savedCFrame = myRoot.CFrame
-        
-        if firetouchinterest then
-            firetouchinterest(myRoot, gunPart, 0)
-            task.wait(0.05)
-            firetouchinterest(myRoot, gunPart, 1)
-        else
-            myRoot.AssemblyLinearVelocity = Vector3.zero
-            myRoot.AssemblyAngularVelocity = Vector3.zero
+    task.spawn(function()
+        pcall(function()
+            local myChar = LocalPlayer.Character
+            local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
+            if not myRoot then return end
             
-            myRoot.CFrame = gunPart.CFrame + Vector3.new(0, 1, 0)
-            task.wait(0.15)
-            
-            for i = 1, 3 do
-                myRoot.AssemblyLinearVelocity = Vector3.zero
-                myRoot.AssemblyAngularVelocity = Vector3.zero
-                myRoot.CFrame = savedCFrame
-                task.wait(0.02)
+            local gunPart = nil
+            for _, obj in ipairs(Workspace:GetDescendants()) do
+                if obj.Name == "GunDrop" or obj.Name:lower():find("gundrop") then
+                    if obj:IsA("BasePart") then
+                        gunPart = obj
+                        break
+                    elseif obj:IsA("Model") then
+                        gunPart = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
+                        if gunPart then break end
+                    end
+                end
             end
-        end
-    end
+            
+            if gunPart then
+                local savedCFrame = myRoot.CFrame
+                
+                if firetouchinterest then
+                    firetouchinterest(myRoot, gunPart, 0)
+                    task.wait(0.05)
+                    firetouchinterest(myRoot, gunPart, 1)
+                else
+                    myRoot.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+                    myRoot.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+                    
+                    myRoot.CFrame = gunPart.CFrame + Vector3.new(0, 1, 0)
+                    task.wait(0.2)
+                    
+                    myRoot.CFrame = savedCFrame
+                    myRoot.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+                    myRoot.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+                end
+            end
+        end)
+    end)
 end
 
 -- ==========================================
@@ -535,7 +534,7 @@ task.spawn(function()
             local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
             if myRoot then
                 myRoot.CFrame = CFrame.new(0, 150, 0)
-                myRoot.AssemblyLinearVelocity = Vector3.zero
+                myRoot.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
             end
         end
         task.wait(1)
@@ -795,7 +794,7 @@ local function performFling(targetP, duration)
     
     local bV = Instance.new("BodyVelocity")
     bV.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-    bV.Velocity = Vector3.zero
+    bV.Velocity = Vector3.new(0, 0, 0)
     bV.Parent = myHrp
     
     local bAV = Instance.new("BodyAngularVelocity")
@@ -812,16 +811,16 @@ local function performFling(targetP, duration)
     bV:Destroy()
     bAV:Destroy()
     
-    myHrp.AssemblyLinearVelocity = Vector3.zero
-    myHrp.AssemblyAngularVelocity = Vector3.zero
+    myHrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+    myHrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
     if myHum then myHum.Sit = false end
     
     task.wait(0.05)
     myHrp.CFrame = savedCFrame
     task.wait(0.05)
     myHrp.CFrame = savedCFrame
-    myHrp.AssemblyLinearVelocity = Vector3.zero
-    myHrp.AssemblyAngularVelocity = Vector3.zero
+    myHrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+    myHrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
     
     aFazerFling = false
 end
