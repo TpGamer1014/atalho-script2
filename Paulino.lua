@@ -23,6 +23,7 @@ local aimbotActive = false
 local freecamActive = false
 local antiAfkAtivo = false
 local fpsBoostAtivo = false
+local noclipActive = false -- Nova variável de estado
 
 local xpFarmConnection = nil
 local safePlatform = nil
@@ -32,6 +33,7 @@ local trollSheriffConnection = nil
 local trollMurderConnection = nil
 local antiAfkConnection = nil
 local speedJumpConnection = nil
+local noclipConnection = nil -- Nova conexão
 
 -- ==========================================
 -- 🛡️ ANTI-FLING PASSIVO
@@ -457,10 +459,23 @@ CloseBtn.MouseButton1Click:Connect(function()
     xpFarmAtivo = false
     espActive = false
     antiAfkAtivo = false
+    noclipActive = false -- Desliga noclip ao fechar
+    
     if xpFarmConnection then xpFarmConnection:Disconnect() end
     if antiFlingConnection then antiFlingConnection:Disconnect() end
     if antiAfkConnection then antiAfkConnection:Disconnect() end
     if speedJumpConnection then speedJumpConnection:Disconnect() end
+    if noclipConnection then noclipConnection:Disconnect() end -- Disconecta conexão noclip
+
+    -- Força CanCollide=true nas partes do personagem para não cair infinitamente ao fechar
+    if LocalPlayer.Character then
+        for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = true
+            end
+        end
+    end
+    
     if ScreenGui then ScreenGui:Destroy() end
 end)
 
@@ -609,6 +624,45 @@ local AimbotButton = addButton(pages.Combat, "🎯 Aimbot (Tecla E): ❌ DESLIGA
 local GrabGunButton = addButton(pages.Combat, "🔫 Pegar Arma do Chão (Tecla G)")
 local TpNearestButton = addButton(pages.Combat, "⚡ Teleportar Próximo (Tecla R)")
 local SelectPlayerButton = addButton(pages.Combat, "👥 Selecionar Jogador para TP ➔")
+
+-- Novo botão Noclip estiloso
+local NoclipButton = addButton(pages.Combat, "👻 Noclip (Atravessar Paredes): ❌ DESLIGADO")
+
+NoclipButton.MouseButton1Click:Connect(function()
+    noclipActive = not noclipActive
+    NoclipButton.Text = noclipActive and "👻 Noclip (Atravessar Paredes): ✅ LIGADO" or "👻 Noclip (Atravessar Paredes): ❌ DESLIGADO"
+    NoclipButton.BackgroundColor3 = noclipActive and Color3.fromRGB(40, 140, 70) or Color3.fromRGB(30, 30, 42)
+    
+    if noclipActive then
+        if not noclipConnection then
+            noclipConnection = RunService.Stepped:Connect(function()
+                if not _G.PaulinoMenuRunning or not noclipActive then return end
+                local char = LocalPlayer.Character
+                if char then
+                    for _, p in ipairs(char:GetDescendants()) do
+                        if p:IsA("BasePart") then
+                            p.CanCollide = false
+                        end
+                    end
+                end
+            end)
+        end
+    else
+        if noclipConnection then
+            noclipConnection:Disconnect()
+            noclipConnection = nil
+        end
+        -- Restaura colisões ao desligar, para não cair pelo chão
+        local char = LocalPlayer.Character
+        if char then
+            for _, p in ipairs(char:GetDescendants()) do
+                if p:IsA("BasePart") then
+                    p.CanCollide = true
+                end
+            end
+        end
+    end
+end)
 
 addLabel(pages.Combat, "🏃‍♂️ Configurações de Movimento (0 a 100):")
 
