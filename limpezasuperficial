@@ -1,0 +1,86 @@
+Add-Type -AssemblyName System.Windows.Forms
+Add-Type -AssemblyName System.Drawing
+
+# --- JANELA PRINCIPAL ---
+$form = New-Object System.Windows.Forms.Form
+$form.Text = "Paulino Limpeza W11 - Profunda"
+$form.Size = New-Object System.Drawing.Size(500, 420)
+$form.StartPosition = "CenterScreen"
+$form.BackColor = [System.Drawing.Color]::FromArgb(18, 40, 75)
+$form.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::FixedDialog
+$form.MaximizeBox = $false
+
+# --- TÍTULO ---
+$labelTitle = New-Object System.Windows.Forms.Label
+$labelTitle.Text = "Limpeza de Windows 11 - Paulino"
+$labelTitle.Font = New-Object System.Drawing.Font("Segoe UI", 13, [System.Drawing.FontStyle]::Bold)
+$labelTitle.ForeColor = [System.Drawing.Color]::White
+$labelTitle.Location = New-Object System.Drawing.Point(30, 20)
+$labelTitle.Size = New-Object System.Drawing.Size(420, 30)
+$labelTitle.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
+$form.Controls.Add($labelTitle)
+
+# --- BOTÃO 1: TEMPORÁRIOS E CACHE ---
+$btnTemp = New-Object System.Windows.Forms.Button
+$btnTemp.Text = "1. Limpar Temporários & Prefetch"
+$btnTemp.Font = New-Object System.Drawing.Font("Segoe UI", 9, [System.Drawing.FontStyle]::Bold)
+$btnTemp.Location = New-Object System.Drawing.Point(50, 80)
+$btnTemp.Size = New-Object System.Drawing.Size(380, 45)
+$btnTemp.BackColor = [System.Drawing.Color]::FromArgb(41, 128, 185)
+$btnTemp.ForeColor = [System.Drawing.Color]::White
+$btnTemp.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+$btnTemp.Add_Click({
+    Remove-Item "$env:TEMP\*" -Recurse -Force -ErrorAction SilentlyContinue
+    Remove-Item "C:\Windows\Temp\*" -Recurse -Force -ErrorAction SilentlyContinue
+    Remove-Item "C:\Windows\Prefetch\*" -Recurse -Force -ErrorAction SilentlyContinue
+    [System.Windows.Forms.MessageBox]::Show("Ficheiros temporários eliminados com sucesso!", "Paulino Limpeza", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
+})
+$form.Controls.Add($btnTemp)
+
+# --- BOTÃO 2: RECICLAGEM E WINDOWS UPDATE ANTIGO ---
+$btnRecycle = New-Object System.Windows.Forms.Button
+$btnRecycle.Text = "2. Esvaziar Reciclagem & Win Update Antigo"
+$btnRecycle.Font = New-Object System.Drawing.Font("Segoe UI", 9, [System.Drawing.FontStyle]::Bold)
+$btnRecycle.Location = New-Object System.Drawing.Point(50, 145)
+$btnRecycle.Size = New-Object System.Drawing.Size(380, 45)
+$btnRecycle.BackColor = [System.Drawing.Color]::FromArgb(41, 128, 185)
+$btnRecycle.ForeColor = [System.Drawing.Color]::White
+$btnRecycle.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+$btnRecycle.Add_Click({
+    Clear-RecycleBin -Force -ErrorAction SilentlyContinue
+    Remove-Item "C:\Windows\SoftwareDistribution\Download\*" -Recurse -Force -ErrorAction SilentlyContinue
+    [System.Windows.Forms.MessageBox]::Show("Reciclagem e cache de atualizações limpas!", "Paulino Limpeza", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
+})
+$form.Controls.Add($btnRecycle)
+
+# --- BOTÃO 3: LIMPEZA TOTAL ---
+$btnAll = New-Object System.Windows.Forms.Button
+$btnAll.Text = "EXECUTAR LIMPEZA TOTAL"
+$btnAll.Font = New-Object System.Drawing.Font("Segoe UI", 10, [System.Drawing.FontStyle]::Bold)
+$btnAll.Location = New-Object System.Drawing.Point(50, 220)
+$btnAll.Size = New-Object System.Drawing.Size(380, 55)
+$btnAll.BackColor = [System.Drawing.Color]::FromArgb(39, 174, 96)
+$btnAll.ForeColor = [System.Drawing.Color]::White
+$btnAll.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+$btnAll.Add_Click({
+    Remove-Item "$env:TEMP\*" -Recurse -Force -ErrorAction SilentlyContinue
+    Remove-Item "C:\Windows\Temp\*" -Recurse -Force -ErrorAction SilentlyContinue
+    Remove-Item "C:\Windows\Prefetch\*" -Recurse -Force -ErrorAction SilentlyContinue
+    Clear-RecycleBin -Force -ErrorAction SilentlyContinue
+    Remove-Item "C:\Windows\SoftwareDistribution\Download\*" -Recurse -Force -ErrorAction SilentlyContinue
+    [System.Windows.Forms.MessageBox]::Show("Limpeza profunda do Windows 11 concluída com sucesso!", "Paulino Limpeza", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
+})
+$form.Controls.Add($btnAll)
+
+# --- RODAPÉ ---
+$labelFooter = New-Object System.Windows.Forms.Label
+$labelFooter.Text = "Painel Exclusivo de Paulino • 100% Seguro"
+$labelFooter.Font = New-Object System.Drawing.Font("Segoe UI", 8, [System.Drawing.FontStyle]::Italic)
+$labelFooter.ForeColor = [System.Drawing.Color]::LightGray
+$labelFooter.Location = New-Object System.Drawing.Point(30, 310)
+$labelFooter.Size = New-Object System.Drawing.Size(420, 20)
+$labelFooter.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
+$form.Controls.Add($labelFooter)
+
+# Mostrar Janela
+[void]$form.ShowDialog()
