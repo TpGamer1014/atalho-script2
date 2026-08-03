@@ -1,5 +1,5 @@
 -- ==========================================
--- PAULINO MM2 - SCRIPT COMPLETO (ESP CORRIGIDO)
+-- PAULINO MM2 - SCRIPT COMPLETO (GRAB GUN CORRIGIDO)
 -- ==========================================
 
 local Players = game:GetService("Players")
@@ -335,7 +335,7 @@ CloseBtn.MouseButton1Click:Connect(function()
 end)
 
 -- ==========================================
--- ROLES COM COR VERDE PARA INOCENTES
+-- ROLES
 -- ==========================================
 local function getPlayerTool(p)
     if not p then return nil end
@@ -367,32 +367,49 @@ local function getPlayerColorAndRole(p)
     local tool = getPlayerTool(p)
     if tool == "Knife" or p == getMurderer() then return Color3.fromRGB(220, 40, 40), "[Murderer]" end
     if tool == "Gun" or p == getSheriff() then return Color3.fromRGB(20, 120, 220), "[Sheriff]" end
-    return Color3.fromRGB(50, 255, 50), "[Inocente]" -- Verde Brilhante para Inocentes
+    return Color3.fromRGB(50, 255, 50), "[Inocente]"
 end
 
 -- ==========================================
--- PEGAR ARMA CORRETO
+-- PEGAR ARMA CORRIGIDO (APRIMORADO)
 -- ==========================================
 local function grabGunFromFloor()
     local myChar = LocalPlayer.Character
     local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
     if not myRoot then return end
     
+    local gunPart = nil
     for _, obj in ipairs(Workspace:GetDescendants()) do
-        if (obj.Name == "GunDrop" or obj.Name:lower():find("gundrop")) and obj:IsA("BasePart") then
-            local savedCFrame = myRoot.CFrame
-            
+        if obj.Name == "GunDrop" or obj.Name:lower():find("gundrop") then
+            if obj:IsA("BasePart") then
+                gunPart = obj
+                break
+            elseif obj:IsA("Model") then
+                gunPart = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
+                if gunPart then break end
+            end
+        end
+    end
+    
+    if gunPart then
+        local savedCFrame = myRoot.CFrame
+        
+        -- Usa atalho do executor se existir (Instantâneo)
+        if firetouchinterest then
+            firetouchinterest(myRoot, gunPart, 0)
+            task.wait(0.05)
+            firetouchinterest(myRoot, gunPart, 1)
+        else
+            -- Teleport seguro
             myRoot.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
             myRoot.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
             
-            myRoot.CFrame = obj.CFrame + Vector3.new(0, 1, 0)
-            
-            task.wait(0.15)
+            myRoot.CFrame = gunPart.CFrame + Vector3.new(0, 1, 0)
+            task.wait(0.2)
             
             myRoot.CFrame = savedCFrame
             myRoot.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
             myRoot.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
-            break
         end
     end
 end
@@ -526,7 +543,7 @@ task.spawn(function()
 end)
 
 -- ==========================================
--- ABA VISUAL / ESP (SOMENTE EM ROUND E VIVO)
+-- ABA VISUAL / ESP
 -- ==========================================
 local EspButton = addButton(pages.Visuals, "ESP Roles: DESLIGADO")
 
@@ -591,31 +608,34 @@ task.spawn(function()
             end
             
             for _, obj in ipairs(Workspace:GetDescendants()) do
-                if (obj.Name == "GunDrop" or obj.Name:lower():find("gundrop")) and obj:IsA("BasePart") then
-                    local gunColor = Color3.fromRGB(0, 150, 255)
-                    
-                    local hl = obj:FindFirstChild("PaulinoGunHighlight") or Instance.new("Highlight", obj)
-                    hl.Name = "PaulinoGunHighlight"
-                    hl.OutlineColor = gunColor
-                    hl.OutlineTransparency = 0
-                    hl.FillColor = gunColor
-                    hl.FillTransparency = 1
-                    hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+                if (obj.Name == "GunDrop" or obj.Name:lower():find("gundrop")) and (obj:IsA("BasePart") or obj:IsA("Model")) then
+                    local targetPart = obj:IsA("BasePart") and obj or (obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart"))
+                    if targetPart then
+                        local gunColor = Color3.fromRGB(0, 150, 255)
+                        
+                        local hl = targetPart:FindFirstChild("PaulinoGunHighlight") or Instance.new("Highlight", targetPart)
+                        hl.Name = "PaulinoGunHighlight"
+                        hl.OutlineColor = gunColor
+                        hl.OutlineTransparency = 0
+                        hl.FillColor = gunColor
+                        hl.FillTransparency = 1
+                        hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
 
-                    local bb = obj:FindFirstChild("PaulinoGunBillboard") or Instance.new("BillboardGui", obj)
-                    bb.Name = "PaulinoGunBillboard"
-                    bb.Size = UDim2.new(0, 120, 0, 30)
-                    bb.StudsOffset = Vector3.new(0, -2, 0)
-                    bb.AlwaysOnTop = true
+                        local bb = targetPart:FindFirstChild("PaulinoGunBillboard") or Instance.new("BillboardGui", targetPart)
+                        bb.Name = "PaulinoGunBillboard"
+                        bb.Size = UDim2.new(0, 120, 0, 30)
+                        bb.StudsOffset = Vector3.new(0, -2, 0)
+                        bb.AlwaysOnTop = true
 
-                    local lbl = bb:FindFirstChild("Tag") or Instance.new("TextLabel", bb)
-                    lbl.Name = "Tag"
-                    lbl.Size = UDim2.new(1, 0, 1, 0)
-                    lbl.BackgroundTransparency = 1
-                    lbl.TextColor3 = gunColor
-                    lbl.Font = Enum.Font.GothamBold
-                    lbl.TextSize = 12
-                    lbl.Text = "[Arma Droppada]"
+                        local lbl = bb:FindFirstChild("Tag") or Instance.new("TextLabel", bb)
+                        lbl.Name = "Tag"
+                        lbl.Size = UDim2.new(1, 0, 1, 0)
+                        lbl.BackgroundTransparency = 1
+                        lbl.TextColor3 = gunColor
+                        lbl.Font = Enum.Font.GothamBold
+                        lbl.TextSize = 12
+                        lbl.Text = "[Arma Droppada]"
+                    end
                 end
             end
         else
