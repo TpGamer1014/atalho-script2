@@ -177,12 +177,12 @@ local MinCorner = Instance.new("UICorner")
 MinCorner.CornerRadius = UDim.new(0, 6)
 MinCorner.Parent = MinimizeButton
 
--- BOTÃO MINIMIZADO CUSTOMIZADO (ALINHADO À ESQUERDA)
+-- BOTÃO MINIMIZADO CUSTOMIZADO (AJUSTADO PARA CIMA: Y = 0.35)
 local OpenButton = Instance.new("TextButton")
 OpenButton.Name = "OpenButton"
 OpenButton.Size = UDim2.new(0, 135, 0, 38)
 OpenButton.AnchorPoint = Vector2.new(0, 0.5)
-OpenButton.Position = UDim2.new(0, 0, 0.45, 0)
+OpenButton.Position = UDim2.new(0, 0, 0.35, 0) -- Movido mais para cima
 OpenButton.Text = "☀️  🌸 Paulin"
 OpenButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 OpenButton.TextSize = 15
