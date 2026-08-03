@@ -177,38 +177,49 @@ local MinCorner = Instance.new("UICorner")
 MinCorner.CornerRadius = UDim.new(0, 6)
 MinCorner.Parent = MinimizeButton
 
--- BOTÃO MINIMIZADO CUSTOMIZADO (MAIS ALTO: Y = 0.20 E RETO NA BORDA ESQUERDA)
+-- ==========================================
+-- BOTÃO MINIMIZADO (NO TOPO + RETO NA BORDA)
+-- ==========================================
 local OpenButton = Instance.new("TextButton")
 OpenButton.Name = "OpenButton"
-OpenButton.Size = UDim2.new(0, 135, 0, 38)
-OpenButton.AnchorPoint = Vector2.new(0, 0.5)
-OpenButton.Position = UDim2.new(0, 0, 0.20, 0) -- Posição bem mais alta
-OpenButton.Text = "☀️  🌸 Paulin"
-OpenButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-OpenButton.TextSize = 15
-OpenButton.Font = Enum.Font.GothamBold
+OpenButton.Size = UDim2.new(0, 140, 0, 36)
+OpenButton.Position = UDim2.new(0, 0, 0, 5) -- Subiu totalmente para o topo (Y = 5)
+OpenButton.Text = ""
 OpenButton.BackgroundColor3 = Color3.fromRGB(15, 18, 22)
 OpenButton.BackgroundTransparency = 0.05
 OpenButton.BorderSizePixel = 0
 OpenButton.Visible = false
+OpenButton.ClipsDescendants = true
 OpenButton.Parent = ScreenGui
 
 local OpenCorner = Instance.new("UICorner")
-OpenCorner.CornerRadius = UDim.new(0, 8)
+OpenCorner.CornerRadius = UDim.new(0, 10)
 OpenCorner.Parent = OpenButton
 
--- Preenchimento para deixar a borda esquerda totalmente retangular e colada na tela
-local FlatLeftCover = Instance.new("Frame")
-FlatLeftCover.Size = UDim2.new(0, 12, 1, 0)
-FlatLeftCover.Position = UDim2.new(0, 0, 0, 0)
-FlatLeftCover.BackgroundColor3 = Color3.fromRGB(15, 18, 22)
-FlatLeftCover.BackgroundTransparency = 0.05
-FlatLeftCover.BorderSizePixel = 0
-FlatLeftCover.ZIndex = OpenButton.ZIndex
-FlatLeftCover.Parent = OpenButton
+-- Cobridor retangular da borda esquerda (deixa retangular e encostado no monitor)
+local LeftSquareCover = Instance.new("Frame")
+LeftSquareCover.Size = UDim2.new(0, 15, 1, 0)
+LeftSquareCover.Position = UDim2.new(0, 0, 0, 0)
+LeftSquareCover.BackgroundColor3 = Color3.fromRGB(15, 18, 22)
+LeftSquareCover.BorderSizePixel = 0
+LeftSquareCover.ZIndex = 2
+LeftSquareCover.Parent = OpenButton
 
+-- Texto por cima
+local OpenText = Instance.new("TextLabel")
+OpenText.Size = UDim2.new(1, 0, 1, 0)
+OpenText.Position = UDim2.new(0, 0, 0, 0)
+OpenText.Text = "☀️  🌸 Paulin"
+OpenText.TextColor3 = Color3.fromRGB(255, 255, 255)
+OpenText.TextSize = 14
+OpenText.Font = Enum.Font.GothamBold
+OpenText.BackgroundTransparency = 1
+OpenText.ZIndex = 3
+OpenText.Parent = OpenButton
+
+-- Borda Neon (UIStroke)
 local OpenStroke = Instance.new("UIStroke")
-OpenStroke.Thickness = 2.5
+OpenStroke.Thickness = 2
 OpenStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 OpenStroke.Parent = OpenButton
 
