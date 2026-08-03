@@ -1,5 +1,5 @@
 -- ==========================================
--- PAULINO MM2 - SCRIPT COMPLETO (COM ANTI-AFK)
+-- PAULINO MM2 - SCRIPT COMPLETO (SPEED E JUMP)
 -- ==========================================
 
 local Players = game:GetService("Players")
@@ -22,6 +22,12 @@ local freecamActive = false
 local aFazerFling = false
 local antiAfkAtivo = false
 
+-- Variáveis de Velocidade e Pulo
+local customSpeed = 16
+local customJump = 50
+local speedActive = false
+local jumpActive = false
+
 local antiFlingConnection = nil
 local freecamConn = nil
 
@@ -32,6 +38,24 @@ LocalPlayer.Idled:Connect(function()
     if antiAfkAtivo then
         VirtualUser:CaptureController()
         VirtualUser:ClickButton2(Vector2.new())
+    end
+end)
+
+-- ==========================================
+-- LOOP DE VELOCIDADE E PULO (0 A 100)
+-- ==========================================
+RunService.Stepped:Connect(function()
+    if not _G.PaulinoMenuRunning then return end
+    local char = LocalPlayer.Character
+    local hum = char and char:FindFirstChildOfClass("Humanoid")
+    if hum then
+        if speedActive then
+            hum.WalkSpeed = customSpeed
+        end
+        if jumpActive then
+            hum.UseJumpPower = true
+            hum.JumpPower = customJump
+        end
     end
 end)
 
@@ -233,7 +257,7 @@ local function createPage(name)
     page.Size = UDim2.new(1, 0, 1, 0)
     page.BackgroundTransparency = 1
     page.BorderSizePixel = 0
-    page.CanvasSize = UDim2.new(0, 0, 0, 480)
+    page.CanvasSize = UDim2.new(0, 0, 0, 520)
     page.ScrollBarThickness = 4
     page.Visible = false
     page.Parent = ContentContainer
@@ -332,9 +356,57 @@ local function addLabel(page, text)
     return lbl
 end
 
+-- HELPER PARA ENTRADA DE NÚMERO (0 A 100)
+local function addNumberInput(page, labelText, defaultVal, callback)
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(1, 0, 0, 34)
+    frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    frame.BackgroundTransparency = 0.4
+    frame.Parent = page
+
+    local fCorner = Instance.new("UICorner")
+    fCorner.CornerRadius = UDim.new(0, 6)
+    fCorner.Parent = frame
+
+    local lbl = Instance.new("TextLabel")
+    lbl.Size = UDim2.new(0.65, 0, 1, 0)
+    lbl.Position = UDim2.new(0, 8, 0, 0)
+    lbl.Text = labelText
+    lbl.TextColor3 = Color3.fromRGB(30, 30, 40)
+    lbl.TextSize = 11
+    lbl.Font = Enum.Font.GothamBold
+    lbl.BackgroundTransparency = 1
+    lbl.TextXAlignment = Enum.TextXAlignment.Left
+    lbl.Parent = frame
+
+    local box = Instance.new("TextBox")
+    box.Size = UDim2.new(0.28, 0, 0.7, 0)
+    box.Position = UDim2.new(0.7, -5, 0.15, 0)
+    box.Text = tostring(defaultVal)
+    box.TextColor3 = Color3.fromRGB(20, 20, 30)
+    box.TextSize = 12
+    box.Font = Enum.Font.GothamBold
+    box.BackgroundColor3 = Color3.fromRGB(230, 230, 240)
+    box.Parent = frame
+
+    local bCorner = Instance.new("UICorner")
+    bCorner.CornerRadius = UDim.new(0, 4)
+    bCorner.Parent = box
+
+    box.FocusLost:Connect(function()
+        local val = tonumber(box.Text)
+        if val then
+            val = math.clamp(val, 0, 100)
+            box.Text = tostring(val)
+            callback(val)
+        else
+            box.Text = tostring(defaultVal)
+        end
+    end)
+end
+
 addLabel(pages.Home, "Bem-vindo ao Paulino Hub!")
 
--- BOTÃO ANTI-AFK ADICIONADO
 local AntiAfkBtn = addButton(pages.Home, "Anti-AFK: DESLIGADO")
 AntiAfkBtn.MouseButton1Click:Connect(function()
     antiAfkAtivo = not antiAfkAtivo
@@ -350,6 +422,8 @@ CloseBtn.MouseButton1Click:Connect(function()
     xpFarmAtivo = false
     espActive = false
     antiAfkAtivo = false
+    speedActive = false
+    jumpActive = false
     if antiFlingConnection then antiFlingConnection:Disconnect() end
     if ScreenGui then ScreenGui:Destroy() end
 end)
@@ -412,14 +486,11 @@ local function grabGunFromFloor()
         if gunPart then
             local savedCFrame = myRoot.CFrame
 
-            -- Teleporta para a arma
             myRoot.AssemblyLinearVelocity = Vector3.zero
             myRoot.CFrame = gunPart.CFrame
             
-            -- Tempo para o servidor registrar
             task.wait(0.25)
 
-            -- Volta para a posição original
             myRoot.CFrame = savedCFrame
             myRoot.AssemblyLinearVelocity = Vector3.zero
         end
@@ -427,8 +498,42 @@ local function grabGunFromFloor()
 end
 
 -- ==========================================
--- ABA COMBATE
+-- ABA COMBATE & MOVIMENTO
 -- ==========================================
+local SpeedToggleBtn = addButton(pages.Combat, "Alterar Velocidade: DESLIGADO")
+addNumberInput(pages.Combat, "Velocidade (0-100):", 16, function(val)
+    customSpeed = val
+end)
+
+SpeedToggleBtn.MouseButton1Click:Connect(function()
+    speedActive = not speedActive
+    SpeedToggleBtn.Text = speedActive and "Alterar Velocidade: LIGADO" or "Alterar Velocidade: DESLIGADO"
+    SpeedToggleBtn.BackgroundColor3 = speedActive and Color3.fromRGB(40, 180, 90) or Color3.fromRGB(255, 255, 255)
+    SpeedToggleBtn.TextColor3 = speedActive and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(25, 25, 35)
+    if not speedActive then
+        local char = LocalPlayer.Character
+        local hum = char and char:FindFirstChildOfClass("Humanoid")
+        if hum then hum.WalkSpeed = 16 end
+    end
+end)
+
+local JumpToggleBtn = addButton(pages.Combat, "Alterar Pulo: DESLIGADO")
+addNumberInput(pages.Combat, "Força do Pulo (0-100):", 50, function(val)
+    customJump = val
+end)
+
+JumpToggleBtn.MouseButton1Click:Connect(function()
+    jumpActive = not jumpActive
+    JumpToggleBtn.Text = jumpActive and "Alterar Pulo: LIGADO" or "Alterar Pulo: DESLIGADO"
+    JumpToggleBtn.BackgroundColor3 = jumpActive and Color3.fromRGB(40, 180, 90) or Color3.fromRGB(255, 255, 255)
+    JumpToggleBtn.TextColor3 = jumpActive and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(25, 25, 35)
+    if not jumpActive then
+        local char = LocalPlayer.Character
+        local hum = char and char:FindFirstChildOfClass("Humanoid")
+        if hum then hum.JumpPower = 50 end
+    end
+end)
+
 local AimbotButton = addButton(pages.Combat, "Aimbot (E): DESLIGADO")
 local GrabGunButton = addButton(pages.Combat, "Pegar Arma do Chão (G)")
 local TpNearestButton = addButton(pages.Combat, "Teleportar Próximo (R)")
