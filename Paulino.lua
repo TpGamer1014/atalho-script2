@@ -1,5 +1,5 @@
 -- ==========================================
--- PAULINO MM2 - SCRIPT COMPLETO (CORRIGIDO)
+-- PAULINO MM2 - SCRIPT COMPLETO (FINAL CORRIGIDO)
 -- ==========================================
 
 local Players = game:GetService("Players")
@@ -161,37 +161,43 @@ MinCorner.CornerRadius = UDim.new(0, 6)
 MinCorner.Parent = MinimizeButton
 
 -- ==========================================
--- BOTÃO MINIMIZADO (BRANCO SÓLIDO CORRIGIDO)
+-- BOTÃO MINIMIZADO (FRAME BRANCO SÓLIDO)
 -- ==========================================
+local OpenButtonBg = Instance.new("Frame")
+OpenButtonBg.Name = "OpenButtonBg"
+OpenButtonBg.Size = UDim2.new(0, 140, 0, 36)
+OpenButtonBg.Position = UDim2.new(0, 0, 0, 200)
+OpenButtonBg.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+OpenButtonBg.BackgroundTransparency = 0
+OpenButtonBg.BorderSizePixel = 0
+OpenButtonBg.Visible = false
+OpenButtonBg.Parent = ScreenGui
+
+local OpenCorner = Instance.new("UICorner")
+OpenCorner.CornerRadius = UDim.new(0, 10)
+OpenCorner.Parent = OpenButtonBg
+
 local OpenButton = Instance.new("TextButton")
 OpenButton.Name = "OpenButton"
-OpenButton.Size = UDim2.new(0, 140, 0, 36)
-OpenButton.Position = UDim2.new(0, 0, 0, 200)
+OpenButton.Size = UDim2.new(1, 0, 1, 0)
+OpenButton.BackgroundTransparency = 1
 OpenButton.Text = "☀️  🌸 Paulin"
 OpenButton.TextColor3 = Color3.fromRGB(20, 20, 30)
 OpenButton.TextSize = 14
 OpenButton.Font = Enum.Font.GothamBold
-OpenButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-OpenButton.BackgroundTransparency = 0
-OpenButton.BorderSizePixel = 0
-OpenButton.Visible = false
-OpenButton.Parent = ScreenGui
-
-local OpenCorner = Instance.new("UICorner")
-OpenCorner.CornerRadius = UDim.new(0, 10)
-OpenCorner.Parent = OpenButton
+OpenButton.Parent = OpenButtonBg
 
 local minimized = false
 MinimizeButton.MouseButton1Click:Connect(function()
     minimized = not minimized
     MainFrame.Visible = not minimized
-    OpenButton.Visible = minimized
+    OpenButtonBg.Visible = minimized
 end)
 
 OpenButton.MouseButton1Click:Connect(function()
     minimized = not minimized
     MainFrame.Visible = not minimized
-    OpenButton.Visible = minimized
+    OpenButtonBg.Visible = minimized
 end)
 
 local dragging, dragStart, startPos
