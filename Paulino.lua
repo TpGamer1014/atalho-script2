@@ -1,5 +1,5 @@
 -- ==========================================
--- PAULINO MM2 - SCRIPT COMPLETO (FIX GRAB GUN V2)
+-- PAULINO MM2 - SCRIPT COMPLETO (COM XP FARM)
 -- ==========================================
 
 local Players = game:GetService("Players")
@@ -16,6 +16,7 @@ _G.PaulinoMenuRunning = true
 
 local farmAtivo = false
 local lobbyFarmAtivo = false
+local xpFarmAtivo = false
 local espActive = false
 local aimbotActive = false
 local freecamActive = false
@@ -293,6 +294,7 @@ CloseBtn.MouseButton1Click:Connect(function()
     _G.PaulinoMenuRunning = false
     farmAtivo = false
     lobbyFarmAtivo = false
+    xpFarmAtivo = false
     espActive = false
     if antiFlingConnection then antiFlingConnection:Disconnect() end
     if ScreenGui then ScreenGui:Destroy() end
@@ -461,10 +463,11 @@ SelectPlayerButton.MouseButton1Click:Connect(function()
 end)
 
 -- ==========================================
--- ABA AUTO FARM & LOBBY FARM
+-- ABA AUTO FARM & LOBBY FARM & XP FARM
 -- ==========================================
 local AutoFarmButton = addButton(pages.Farm, "Auto Farm: DESLIGADO")
 local AutoLobbyBtn = addButton(pages.Farm, "Auto Lobby Farm: DESLIGADO")
+local FarmXpBtn = addButton(pages.Farm, "FarmXP (Lobby All Rounds): DESLIGADO")
 
 local function toggleNoclip(state)
     if state then
@@ -492,9 +495,15 @@ AutoLobbyBtn.MouseButton1Click:Connect(function()
     AutoLobbyBtn.BackgroundColor3 = lobbyFarmAtivo and Color3.fromRGB(50, 160, 80) or Color3.fromRGB(35, 35, 42)
 end)
 
+FarmXpBtn.MouseButton1Click:Connect(function()
+    xpFarmAtivo = not xpFarmAtivo
+    FarmXpBtn.Text = xpFarmAtivo and "FarmXP (Lobby All Rounds): LIGADO" or "FarmXP (Lobby All Rounds): DESLIGADO"
+    FarmXpBtn.BackgroundColor3 = xpFarmAtivo and Color3.fromRGB(50, 160, 80) or Color3.fromRGB(35, 35, 42)
+end)
+
 task.spawn(function()
     while ScreenGui.Parent do
-        if lobbyFarmAtivo then
+        if lobbyFarmAtivo or xpFarmAtivo then
             local myChar = LocalPlayer.Character
             local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
             if myRoot then
