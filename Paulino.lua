@@ -1,5 +1,5 @@
 -- ==========================================
--- PAULINO MM2 - SCRIPT COMPLETO (ATUALIZADO)
+-- PAULINO MM2 - SCRIPT COMPLETO (CORRIGIDO)
 -- ==========================================
 
 local Players = game:GetService("Players")
@@ -8,6 +8,7 @@ local CoreGui = game:GetService("CoreGui")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local VirtualUser = game:GetService("VirtualUser")
+local TweenService = game:GetService("TweenService")
 
 local LocalPlayer = Players.LocalPlayer
 local Camera = Workspace.CurrentCamera
@@ -116,44 +117,130 @@ MinimizeButton.BorderSizePixel = 0
 MinimizeButton.Parent = TopBar
 
 -- ==========================================
--- BOTÃO MINIMIZADO (GRUDADO NA BORDA ESQUERDA)
+-- BOTÃO MINIMIZADO (COM ANIMAÇÃO)
 -- ==========================================
 local OpenButton = Instance.new("TextButton")
-OpenButton.Size = UDim2.new(0, 105, 0, 32)
-OpenButton.Position = UDim2.new(0, 0, 0.5, -80)
-OpenButton.Text = "☀️ Paulin"
-OpenButton.TextColor3 = Color3.fromRGB(180, 180, 190)
-OpenButton.TextSize = 12
-OpenButton.Font = Enum.Font.GothamBold
-OpenButton.BackgroundColor3 = Color3.fromRGB(10, 10, 14)
-OpenButton.BackgroundTransparency = 0.4
+OpenButton.Size = UDim2.new(0, 32, 0, 32)
+OpenButton.Position = UDim2.new(0, -16, 0.5, -16)
+OpenButton.Text = ""
+OpenButton.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+OpenButton.BackgroundTransparency = 0.5
 OpenButton.BorderSizePixel = 0
 OpenButton.Visible = false
 OpenButton.Parent = ScreenGui
 
 local OpenCorner = Instance.new("UICorner")
-OpenCorner.CornerRadius = UDim.new(0, 8)
+OpenCorner.CornerRadius = UDim.new(1, 0)
 OpenCorner.Parent = OpenButton
 
 local OpenStroke = Instance.new("UIStroke")
-OpenStroke.Color = Color3.fromRGB(160, 160, 170)
-OpenStroke.Thickness = 1.2
+OpenStroke.Color = Color3.fromRGB(80, 80, 100)
+OpenStroke.Transparency = 0.5
+OpenStroke.Thickness = 1
 OpenStroke.Parent = OpenButton
 
 local minimized = false
-MinimizeButton.MouseButton1Click:Connect(function()
-    minimized = not minimized
-    MainFrame.Visible = not minimized
-    OpenButton.Visible = minimized
-end)
+local animating = false
+
+local function alternarMenu()
+    if animating then return end
+    animating = true
+    
+    if not minimized then
+        TweenService:Create(MainFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+            Size = UDim2.new(0, 0, 0, 0),
+            Position = OpenButton.Position + UDim2.new(0, 16, 0, 16)
+        }):Play()
+        
+        task.wait(0.2)
+        MainFrame.Visible = false
+        MainFrame.Size = UDim2.new(0, 520, 0, 360)
+        MainFrame.Position = UDim2.new(0.5, -260, 0.5, -180)
+        
+        OpenButton.Size = UDim2.new(0, 0, 0, 0)
+        OpenButton.Visible = true
+        TweenService:Create(OpenButton, TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+            Size = UDim2.new(0, 32, 0, 32)
+        }):Play()
+        
+        minimized = true
+    else
+        TweenService:Create(OpenButton, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+            Size = UDim2.new(0, 0, 0, 0)
+        }):Play()
+        
+        task.wait(0.15)
+        OpenButton.Visible = false
+        OpenButton.Size = UDim2.new(0, 32, 0, 32)
+        
+        MainFrame.Size = UDim2.new(0, 0, 0, 0)
+        MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+        MainFrame.Visible = true
+        
+        TweenService:Create(MainFrame, TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+            Size = UDim2.new(0, 520, 0, 360),
+            Position = UDim2.new(0.5, -260, 0.5, -180)
+        }):Play()
+        
+        minimized = false
+    end
+    
+    task.wait(0.25)
+    animating = false
+end
+
+MinimizeButton.MouseButton1Click:Connect(alternarMenu)
 
 OpenButton.MouseButton1Click:Connect(function()
-    minimized = not minimized
-    MainFrame.Visible = not minimized
-    OpenButton.Visible = minimized
+    if not OpenButton:GetAttribute("IsDragging") then
+        alternarMenu()
+    end
 end)
 
--- Arrastar GUI
+local openDragging = false
+local openDragStart, openStartPos
+
+OpenButton.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        openDragging = true
+        OpenButton:SetAttribute("IsDragging", false)
+        openDragStart = input.Position
+        openStartPos = OpenButton.AbsolutePosition
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if openDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - openDragStart
+        if delta.Magnitude > 5 then
+            OpenButton:SetAttribute("IsDragging", true)
+        end
+        local newX = openStartPos.X + delta.X
+        local newY = openStartPos.Y + delta.Y
+        OpenButton.Position = UDim2.new(0, newX, 0, newY)
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if openDragging and (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
+        openDragging = false
+        
+        local viewportSize = Camera.ViewportSize
+        local currentAbsPos = OpenButton.AbsolutePosition
+        local targetX = (currentAbsPos.X < viewportSize.X / 2) and -16 or (viewportSize.X - 16)
+        local targetY = math.clamp(currentAbsPos.Y, -16, viewportSize.Y - 16)
+        
+        TweenService:Create(OpenButton, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Position = UDim2.new(0, targetX, 0, targetY)
+        }):Play()
+        
+        task.delay(0.1, function()
+            OpenButton:SetAttribute("IsDragging", false)
+        end)
+    end
+end)
+
+-- Arrastar GUI Principal
 local dragging, dragStart, startPos
 TopBar.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -247,7 +334,19 @@ local function createTabButton(name, displayName, default)
     if default then page.Visible = true end
     
     btn.MouseButton1Click:Connect(function()
-        for pName, pObj in pairs(pages) do pObj.Visible = (pName == name) end
+        for pName, pObj in pairs(pages) do 
+            if pName == name then
+                pObj.Visible = true
+                pObj.Position = UDim2.new(0, 20, 0, 0)
+                pObj.BackgroundTransparency = 1
+                TweenService:Create(pObj, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                    Position = UDim2.new(0, 0, 0, 0)
+                }):Play()
+            else
+                pObj.Visible = false
+            end
+        end
+        
         for _, b in ipairs(Sidebar:GetChildren()) do
             if b:IsA("TextButton") then
                 b.BackgroundColor3 = Color3.fromRGB(20, 20, 24)
@@ -255,8 +354,11 @@ local function createTabButton(name, displayName, default)
                 b.TextColor3 = Color3.fromRGB(160, 160, 170)
             end
         end
-        btn.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
-        btn.BackgroundTransparency = 0.3
+        
+        TweenService:Create(btn, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            BackgroundColor3 = Color3.fromRGB(45, 45, 55),
+            BackgroundTransparency = 0.3
+        }):Play()
         btn.TextColor3 = Color3.fromRGB(255, 255, 255)
     end)
 end
@@ -380,7 +482,7 @@ local function getPlayerColorAndRole(p)
 end
 
 -- ==========================================
--- PEGAR ARMA
+-- PEGAR ARMA (CORRIGIDO E OTIMIZADO)
 -- ==========================================
 local function grabGunFromFloor()
     local myChar = LocalPlayer.Character
@@ -390,13 +492,18 @@ local function grabGunFromFloor()
     
     for _, obj in ipairs(Workspace:GetDescendants()) do
         if (obj.Name == "GunDrop" or obj.Name:lower():find("gundrop")) and obj:IsA("BasePart") then
-            local savedCFrame = myRoot.CFrame
             myRoot.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
             myRoot.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+            
+            local savedCFrame = myRoot.CFrame
+            
             myRoot.CFrame = obj.CFrame + Vector3.new(0, 3, 0)
-            task.wait(0.2)
-            myRoot.CFrame = savedCFrame
+            
+            task.wait(0.05)
+            
             myRoot.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+            myRoot.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+            myRoot.CFrame = savedCFrame
             break
         end
     end
@@ -454,34 +561,89 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     end
 end)
 
-local PlayerListFrame = Instance.new("ScrollingFrame")
-PlayerListFrame.Size = UDim2.new(0, 180, 0, 180)
-PlayerListFrame.Position = UDim2.new(1, 10, 0, 0)
-PlayerListFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 36)
-PlayerListFrame.BackgroundTransparency = 0.2
-PlayerListFrame.BorderSizePixel = 0
-PlayerListFrame.Visible = false
-PlayerListFrame.Parent = MainFrame
+-- ==========================================
+-- FUNÇÃO AUXILIAR: CRIAR LISTA CINEMATOGRÁFICA (BLUR + CANTOS REDONDOS + ESCURO)
+-- ==========================================
+local function createCinematicList()
+    local container = Instance.new("Frame")
+    container.Size = UDim2.new(0, 190, 0, 190)
+    container.Position = UDim2.new(1, 10, 0, 0)
+    container.BackgroundColor3 = Color3.fromRGB(12, 12, 16)
+    container.BackgroundTransparency = 0.15
+    container.BorderSizePixel = 0
+    container.Visible = false
+    container.Parent = MainFrame
 
-local ListLayout = Instance.new("UIListLayout")
-ListLayout.Parent = PlayerListFrame
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 12)
+    corner.Parent = container
+
+    local blur = Instance.new("BlurEffect")
+    blur.Size = 0
+    blur.Parent = Camera
+
+    local vignette = Instance.new("ImageLabel")
+    vignette.Size = UDim2.new(1, 0, 1, 0)
+    vignette.BackgroundTransparency = 1
+    vignette.Image = "rbxassetid://4593925761"
+    vignette.ImageColor3 = Color3.fromRGB(0, 0, 0)
+    vignette.ImageTransparency = 0.5
+    vignette.Parent = container
+
+    local scroll = Instance.new("ScrollingFrame")
+    scroll.Size = UDim2.new(1, -10, 1, -10)
+    scroll.Position = UDim2.new(0, 5, 0, 5)
+    scroll.BackgroundTransparency = 1
+    scroll.BorderSizePixel = 0
+    scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+    scroll.ScrollBarThickness = 3
+    scroll.Parent = container
+
+    local layout = Instance.new("UIListLayout")
+    layout.Padding = UDim.new(0, 4)
+    layout.Parent = scroll
+
+    layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        scroll.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y)
+    end)
+
+    container:GetPropertyChangedSignal("Visible"):Connect(function()
+        if container.Visible then
+            TweenService:Create(blur, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = 12}):Play()
+        else
+            TweenService:Create(blur, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Size = 0}):Play()
+        end
+    end)
+
+    return container, scroll
+end
+
+-- ==========================================
+-- LISTA DE JOGADORES (COMBATE - TP)
+-- ==========================================
+local PlayerListFrame, PlayerScroll = createCinematicList()
 
 SelectPlayerButton.MouseButton1Click:Connect(function()
     PlayerListFrame.Visible = not PlayerListFrame.Visible
     if PlayerListFrame.Visible then
-        for _, child in ipairs(PlayerListFrame:GetChildren()) do if child:IsA("TextButton") then child:Destroy() end end
+        for _, child in ipairs(PlayerScroll:GetChildren()) do if child:IsA("TextButton") then child:Destroy() end end
         for _, p in ipairs(Players:GetPlayers()) do
             if p ~= LocalPlayer then
                 local color, role = getPlayerColorAndRole(p)
                 local btn = Instance.new("TextButton")
-                btn.Size = UDim2.new(1, 0, 0, 30)
-                btn.Text = " " .. p.Name .. " " .. role
+                btn.Size = UDim2.new(1, 0, 0, 32)
+                btn.Text = "  " .. p.Name .. " " .. role
                 btn.TextColor3 = color
                 btn.TextSize = 11
                 btn.Font = Enum.Font.GothamBold
-                btn.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
+                btn.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
+                btn.BackgroundTransparency = 0.3
                 btn.BorderSizePixel = 0
-                btn.Parent = PlayerListFrame
+                btn.Parent = PlayerScroll
+                
+                local btnCorner = Instance.new("UICorner")
+                btnCorner.CornerRadius = UDim.new(0, 6)
+                btnCorner.Parent = btn
                 
                 btn.MouseButton1Click:Connect(function()
                     local targetRoot = p.Character and p.Character:FindFirstChild("HumanoidRootPart")
@@ -697,34 +859,30 @@ FreecamLivreBtn.MouseButton1Click:Connect(function()
     end
 end)
 
-local CameraListFrame = Instance.new("ScrollingFrame")
-CameraListFrame.Size = UDim2.new(0, 180, 0, 180)
-CameraListFrame.Position = UDim2.new(1, 10, 0, 60)
-CameraListFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 36)
-CameraListFrame.BackgroundTransparency = 0.2
-CameraListFrame.BorderSizePixel = 0
-CameraListFrame.Visible = false
-CameraListFrame.Parent = MainFrame
-
-local CamListLayout = Instance.new("UIListLayout")
-CamListLayout.Parent = CameraListFrame
+local CameraListFrame, CameraScroll = createCinematicList()
+CameraListFrame.Position = UDim2.new(1, 10, 0, 50)
 
 FreecamPlayerButton.MouseButton1Click:Connect(function()
     CameraListFrame.Visible = not CameraListFrame.Visible
     if CameraListFrame.Visible then
-        for _, child in ipairs(CameraListFrame:GetChildren()) do if child:IsA("TextButton") then child:Destroy() end end
+        for _, child in ipairs(CameraScroll:GetChildren()) do if child:IsA("TextButton") then child:Destroy() end end
         for _, p in ipairs(Players:GetPlayers()) do
             if p ~= LocalPlayer then
                 local color, role = getPlayerColorAndRole(p)
                 local btn = Instance.new("TextButton")
-                btn.Size = UDim2.new(1, 0, 0, 30)
-                btn.Text = " 👁️ " .. p.Name
+                btn.Size = UDim2.new(1, 0, 0, 32)
+                btn.Text = "  👁️ " .. p.Name
                 btn.TextColor3 = color
                 btn.TextSize = 11
                 btn.Font = Enum.Font.GothamBold
-                btn.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
+                btn.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
+                btn.BackgroundTransparency = 0.3
                 btn.BorderSizePixel = 0
-                btn.Parent = CameraListFrame
+                btn.Parent = CameraScroll
+                
+                local btnCorner = Instance.new("UICorner")
+                btnCorner.CornerRadius = UDim.new(0, 6)
+                btnCorner.Parent = btn
                 
                 btn.MouseButton1Click:Connect(function()
                     if freecamActive then
@@ -768,6 +926,7 @@ end)
 -- ==========================================
 local KillMurderBtn = addButton(pages.Troll, "⚔️ Matar Murderer (Fling)")
 local KillSheriffBtn = addButton(pages.Troll, "🛡️ Matar Sheriff (Fling)")
+local FlingSelectBtn = addButton(pages.Troll, "🎯 Fling em Jogador Selecionado")
 local TrollSheriffBtn = addButton(pages.Troll, "Paralisar Sheriff: DESLIGADO")
 local TrollMurderBtn = addButton(pages.Troll, "Paralisar Murderer: DESLIGADO")
 
@@ -819,6 +978,40 @@ KillSheriffBtn.MouseButton1Click:Connect(function()
     ativarFlingTemporario(KillSheriffBtn, "🛡️ Matar Sheriff (Fling)", getSheriff)
 end)
 
+local TrollListFrame, TrollScroll = createCinematicList()
+TrollListFrame.Position = UDim2.new(1, 10, 0, 120)
+
+FlingSelectBtn.MouseButton1Click:Connect(function()
+    TrollListFrame.Visible = not TrollListFrame.Visible
+    if TrollListFrame.Visible then
+        for _, child in ipairs(TrollScroll:GetChildren()) do if child:IsA("TextButton") then child:Destroy() end end
+        for _, p in ipairs(Players:GetPlayers()) do
+            if p ~= LocalPlayer then
+                local color, role = getPlayerColorAndRole(p)
+                local btn = Instance.new("TextButton")
+                btn.Size = UDim2.new(1, 0, 0, 32)
+                btn.Text = "  💥 " .. p.Name
+                btn.TextColor3 = color
+                btn.TextSize = 11
+                btn.Font = Enum.Font.GothamBold
+                btn.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
+                btn.BackgroundTransparency = 0.3
+                btn.BorderSizePixel = 0
+                btn.Parent = TrollScroll
+                
+                local btnCorner = Instance.new("UICorner")
+                btnCorner.CornerRadius = UDim.new(0, 6)
+                btnCorner.Parent = btn
+                
+                btn.MouseButton1Click:Connect(function()
+                    TrollListFrame.Visible = false
+                    ativarFlingTemporario(FlingSelectBtn, "🎯 Fling em Jogador Selecionado", function() return p end)
+                end)
+            end
+        end
+    end
+end)
+
 local function freezeTargetReal(p)
     if p and p.Character then
         local hrp = p.Character:FindFirstChild("HumanoidRootPart")
@@ -860,7 +1053,7 @@ end)
 
 TrollMurderBtn.MouseButton1Click:Connect(function()
     local active = TrollMurderBtn.Text:find("DESLIGADO")
-    TrollMurderBtn.Text = active and "Paralisar Sheriff: LIGADO" or "Paralisar Sheriff: DESLIGADO"
+    TrollMurderBtn.Text = active and "Paralisar Murderer: LIGADO" or "Paralisar Murderer: DESLIGADO"
     TrollMurderBtn.BackgroundColor3 = active and Color3.fromRGB(50, 160, 80) or Color3.fromRGB(35, 35, 42)
     if active then
         trollMurderConnection = RunService.RenderStepped:Connect(function() freezeTargetReal(getMurderer()) end)
