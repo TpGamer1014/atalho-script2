@@ -1,11 +1,12 @@
 -- ==========================================
--- PAULINO MM2 - SCRIPT COMPLETO (FIX DE CARREGAMENTO)
+-- PAULINO MM2 - SCRIPT COMPLETO (GRAB GUN CORRIGIDO)
 -- ==========================================
 
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local CoreGui = game:GetService("CoreGui")
 local RunService = game:GetService("RunService")
+local HttpService = game:GetService("HttpService")
 local UserInputService = game:GetService("UserInputService")
 
 local LocalPlayer = Players.LocalPlayer
@@ -20,6 +21,7 @@ local aimbotActive = false
 local freecamActive = false
 local aFazerFling = false
 
+local noclipConnection = nil
 local antiFlingConnection = nil
 local freecamConn = nil
 
@@ -56,16 +58,16 @@ local function iniciarAntiFling()
         end
     end)
 end
-pcall(iniciarAntiFling)
+iniciarAntiFling()
 
 -- ==========================================
--- CRIAÇÃO DA GUI
+-- CRIAÇÃO DA GUI (ESTILO BRANCO GLASS)
 -- ==========================================
 local function getGuiContainer()
     if gethui then return gethui() end
     local success, coreGui = pcall(function() return CoreGui end)
     if success and coreGui then return coreGui end
-    return LocalPlayer:FindFirstChildOfClass("PlayerGui") or LocalPlayer:WaitForChild("PlayerGui")
+    return LocalPlayer:WaitForChild("PlayerGui")
 end
 
 local parentContainer = getGuiContainer()
@@ -170,6 +172,7 @@ OpenButton.MouseButton1Click:Connect(function()
     OpenButton.Visible = minimized
 end)
 
+-- Arrastar GUI
 local dragging, dragStart, startPos
 TopBar.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -368,49 +371,47 @@ local function getPlayerColorAndRole(p)
 end
 
 -- ==========================================
--- PEGAR ARMA (OTIMIZADO E PROTEGIDO)
+-- PEGAR ARMA CORRIGIDO (APRIMORADO)
 -- ==========================================
 local function grabGunFromFloor()
-    task.spawn(function()
-        pcall(function()
-            local myChar = LocalPlayer.Character
-            local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
-            if not myRoot then return end
-            
-            local gunPart = nil
-            for _, obj in ipairs(Workspace:GetDescendants()) do
-                if obj.Name == "GunDrop" or obj.Name:lower():find("gundrop") then
-                    if obj:IsA("BasePart") then
-                        gunPart = obj
-                        break
-                    elseif obj:IsA("Model") then
-                        gunPart = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
-                        if gunPart then break end
-                    end
-                end
+    local myChar = LocalPlayer.Character
+    local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
+    if not myRoot then return end
+    
+    local gunPart = nil
+    for _, obj in ipairs(Workspace:GetDescendants()) do
+        if obj.Name == "GunDrop" or obj.Name:lower():find("gundrop") then
+            if obj:IsA("BasePart") then
+                gunPart = obj
+                break
+            elseif obj:IsA("Model") then
+                gunPart = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
+                if gunPart then break end
             end
+        end
+    end
+    
+    if gunPart then
+        local savedCFrame = myRoot.CFrame
+        
+        -- Usa atalho do executor se existir (Instantâneo)
+        if firetouchinterest then
+            firetouchinterest(myRoot, gunPart, 0)
+            task.wait(0.05)
+            firetouchinterest(myRoot, gunPart, 1)
+        else
+            -- Teleport seguro
+            myRoot.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+            myRoot.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
             
-            if gunPart then
-                local savedCFrame = myRoot.CFrame
-                
-                if firetouchinterest then
-                    firetouchinterest(myRoot, gunPart, 0)
-                    task.wait(0.05)
-                    firetouchinterest(myRoot, gunPart, 1)
-                else
-                    myRoot.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-                    myRoot.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
-                    
-                    myRoot.CFrame = gunPart.CFrame + Vector3.new(0, 1, 0)
-                    task.wait(0.2)
-                    
-                    myRoot.CFrame = savedCFrame
-                    myRoot.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-                    myRoot.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
-                end
-            end
-        end)
-    end)
+            myRoot.CFrame = gunPart.CFrame + Vector3.new(0, 1, 0)
+            task.wait(0.2)
+            
+            myRoot.CFrame = savedCFrame
+            myRoot.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+            myRoot.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+        end
+    end
 end
 
 -- ==========================================
@@ -508,7 +509,7 @@ SelectPlayerButton.MouseButton1Click:Connect(function()
 end)
 
 -- ==========================================
--- ABA AUTO FARM
+-- ABA AUTO FARM (XP / LOBBY)
 -- ==========================================
 local AutoLobbyBtn = addButton(pages.Farm, "Auto Lobby Farm: DESLIGADO")
 local FarmXpBtn = addButton(pages.Farm, "FarmXP (Lobby All Rounds): DESLIGADO")
@@ -645,7 +646,7 @@ task.spawn(function()
 end)
 
 -- ==========================================
--- ABA CÂMERA
+-- ABA CÂMERA & FREECAM
 -- ==========================================
 local FreecamLivreBtn = addButton(pages.Camera, "Freecam Livre: DESLIGADO")
 local FreecamPlayerButton = addButton(pages.Camera, "Espectar Jogador")
@@ -775,7 +776,7 @@ ResetCamButton.MouseButton1Click:Connect(function()
 end)
 
 -- ==========================================
--- ABA TROLL
+-- ABA TROLL & FLING MATAR
 -- ==========================================
 local KillMurderBtn = addButton(pages.Troll, "⚔️ Matar Murderer (Fling)")
 local KillSheriffBtn = addButton(pages.Troll, "🛡️ Matar Sheriff (Fling)")
