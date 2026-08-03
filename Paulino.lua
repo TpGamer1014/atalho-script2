@@ -1,5 +1,5 @@
 -- ==========================================
--- PAULINO MM2 - SCRIPT COMPLETO (FLING QUALQUER PLAYER)
+-- PAULINO MM2 - SCRIPT COMPLETO (DESIGN MINIMIZADO CUSTOM)
 -- ==========================================
 
 local Players = game:GetService("Players")
@@ -171,27 +171,35 @@ local MinCorner = Instance.new("UICorner")
 MinCorner.CornerRadius = UDim.new(0, 6)
 MinCorner.Parent = MinimizeButton
 
+-- BOTÃO MINIMIZADO CUSTOMIZADO (IGUAL À IMAGEM)
 local OpenButton = Instance.new("TextButton")
-OpenButton.Size = UDim2.new(0, 50, 0, 50)
-OpenButton.Position = UDim2.new(0, 20, 1, -70)
-OpenButton.Text = "OPEN"
-OpenButton.TextColor3 = Color3.fromRGB(30, 30, 40)
-OpenButton.TextSize = 12
+OpenButton.Size = UDim2.new(0, 125, 0, 36)
+OpenButton.Position = UDim2.new(0, -10, 0.5, -18)
+OpenButton.Text = "☀️  🌸 Paulin"
+OpenButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+OpenButton.TextSize = 14
 OpenButton.Font = Enum.Font.GothamBold
-OpenButton.BackgroundColor3 = Color3.fromRGB(250, 250, 255)
-OpenButton.BackgroundTransparency = 0.2
+OpenButton.BackgroundColor3 = Color3.fromRGB(18, 24, 28)
+OpenButton.BackgroundTransparency = 0.15
 OpenButton.BorderSizePixel = 0
 OpenButton.Visible = false
 OpenButton.Parent = ScreenGui
 
 local OpenCorner = Instance.new("UICorner")
-OpenCorner.CornerRadius = UDim.new(1, 0)
+OpenCorner.CornerRadius = UDim.new(0, 18)
 OpenCorner.Parent = OpenButton
 
 local OpenStroke = Instance.new("UIStroke")
-OpenStroke.Color = Color3.fromRGB(255, 255, 255)
-OpenStroke.Transparency = 0.3
+OpenStroke.Thickness = 2
+OpenStroke.Transparency = 0.1
 OpenStroke.Parent = OpenButton
+
+local OpenGradient = Instance.new("UIGradient")
+OpenGradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 215, 0)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 230, 160))
+})
+OpenGradient.Parent = OpenStroke
 
 local minimized = false
 MinimizeButton.MouseButton1Click:Connect(function()
@@ -356,7 +364,6 @@ local function addLabel(page, text)
     return lbl
 end
 
--- HELPER PARA ENTRADA DE NÚMERO (0 A 100)
 local function addNumberInput(page, labelText, defaultVal, callback)
     local frame = Instance.new("Frame")
     frame.Size = UDim2.new(1, 0, 0, 34)
@@ -966,7 +973,6 @@ KillSheriffBtn.MouseButton1Click:Connect(function()
     ativarFlingTemporario(KillSheriffBtn, "🛡️ Matar Sheriff (Fling)", getSheriff)
 end)
 
--- LISTA DE JOGADORES PARA FLING ESPECÍFICO
 local FlingListFrame = Instance.new("ScrollingFrame")
 FlingListFrame.Size = UDim2.new(0, 180, 0, 180)
 FlingListFrame.Position = UDim2.new(1, 10, 0, 100)
