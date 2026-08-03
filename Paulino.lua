@@ -28,7 +28,6 @@ local espActive = false
 local aimbotActive = false
 local freecamActive = false
 local freecamTpActive = false
-local flingRolesActive = false
 local aFazerFling = false
 local antiAfkAtivo = false
 
@@ -838,49 +837,87 @@ ResetCamButton.MouseButton1Click:Connect(function()
     UserInputService.MouseBehavior = Enum.MouseBehavior.Default
 end)
 
-local FlingBtn = addButton(pages.Troll, "Fling Murder/Sheriff (1s): DESLIGADO")
-FlingBtn.MouseButton1Click:Connect(function()
-    if flingRolesActive then return end
-    flingRolesActive = true
-    FlingBtn.Text = "Fling Murder/Sheriff (1s): LIGADO"
-    FlingBtn.BackgroundColor3 = Color3.fromRGB(40, 180, 90)
-    FlingBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+local function runFlingOnPlayer(targetP)
+    local myChar = LocalPlayer.Character
+    local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
+    if not myRoot or not targetP or not targetP.Character or not targetP.Character:FindFirstChild("HumanoidRootPart") then return end
     
+    local savedPos = myRoot.CFrame
+    local targetRoot = targetP.Character.HumanoidRootPart
+    local startTime = tick()
+    aFazerFling = true
+    
+    while tick() - startTime < 1 and _G.PaulinoMenuRunning do
+        if targetRoot and targetRoot.Parent then
+            myRoot.CFrame = targetRoot.CFrame
+            myRoot.AssemblyLinearVelocity = Vector3.new(99999, 99999, 99999)
+        end
+        task.wait(0.05)
+    end
+    
+    aFazerFling = false
+    myRoot.CFrame = savedPos
+    myRoot.AssemblyLinearVelocity = Vector3.zero
+end
+
+local FlingMurderBtn = addButton(pages.Troll, "Fling Murderer (1s)")
+local FlingSheriffBtn = addButton(pages.Troll, "Fling Sheriff (1s)")
+local FlingSelectBtn = addButton(pages.Troll, "Fling Jogador Específico")
+
+FlingMurderBtn.MouseButton1Click:Connect(function()
     task.spawn(function()
-        local myChar = LocalPlayer.Character
-        local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
-        if not myRoot then
-            flingRolesActive = false
-            FlingBtn.Text = "Fling Murder/Sheriff (1s): DESLIGADO"
-            FlingBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-            FlingBtn.TextColor3 = Color3.fromRGB(25, 25, 35)
-            return
+        local m = getMurderer()
+        if m then
+            runFlingOnPlayer(m)
         end
-        
-        local savedPos = myRoot.CFrame
-        local targetP = getMurderer() or getSheriff()
-        
-        if targetP and targetP.Character and targetP.Character:FindFirstChild("HumanoidRootPart") then
-            local targetRoot = targetP.Character.HumanoidRootPart
-            local startTime = tick()
-            aFazerFling = true
-            
-            while tick() - startTime < 1 and flingRolesActive and _G.PaulinoMenuRunning do
-                myRoot.CFrame = targetRoot.CFrame
-                myRoot.AssemblyLinearVelocity = Vector3.new(99999, 99999, 99999)
-                task.wait(0.05)
-            end
-            
-            aFazerFling = false
-            myRoot.CFrame = savedPos
-            myRoot.AssemblyLinearVelocity = Vector3.zero
-        else
-            aFazerFling = false
-        end
-        
-        flingRolesActive = false
-        FlingBtn.Text = "Fling Murder/Sheriff (1s): DESLIGADO"
-        FlingBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-        FlingBtn.TextColor3 = Color3.fromRGB(25, 25, 35)
     end)
+end)
+
+FlingSheriffBtn.MouseButton1Click:Connect(function()
+    task.spawn(function()
+        local s = getSheriff()
+        if s then
+            runFlingOnPlayer(s)
+        end
+    end)
+end)
+
+local FlingPlayerListFrame = Instance.new("ScrollingFrame")
+FlingPlayerListFrame.Size = UDim2.new(0, 180, 0, 180)
+FlingPlayerListFrame.Position = UDim2.new(1, 10, 0, 0)
+FlingPlayerListFrame.BackgroundColor3 = Color3.fromRGB(245, 245, 250)
+FlingPlayerListFrame.BackgroundTransparency = 0.2
+FlingPlayerListFrame.BorderSizePixel = 0
+FlingPlayerListFrame.Visible = false
+FlingPlayerListFrame.Parent = MainFrame
+
+local FlingListLayout = Instance.new("UIListLayout")
+FlingListLayout.Parent = FlingPlayerListFrame
+
+FlingSelectBtn.MouseButton1Click:Connect(function()
+    FlingPlayerListFrame.Visible = not FlingPlayerListFrame.Visible
+    if FlingPlayerListFrame.Visible then
+        for _, child in ipairs(FlingPlayerListFrame:GetChildren()) do if child:IsA("TextButton") then child:Destroy() end end
+        for _, p in ipairs(Players:GetPlayers()) do
+            if p ~= LocalPlayer then
+                local color, role = getPlayerColorAndRole(p)
+                local btn = Instance.new("TextButton")
+                btn.Size = UDim2.new(1, 0, 0, 30)
+                btn.Text = " " .. p.Name .. " " .. role
+                btn.TextColor3 = color
+                btn.TextSize = 11
+                btn.Font = Enum.Font.GothamBold
+                btn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                btn.BorderSizePixel = 0
+                btn.Parent = FlingPlayerListFrame
+                
+                btn.MouseButton1Click:Connect(function()
+                    FlingPlayerListFrame.Visible = false
+                    task.spawn(function()
+                        runFlingOnPlayer(p)
+                    end)
+                end)
+            end
+        end
+    end
 end)
