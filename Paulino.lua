@@ -1,5 +1,5 @@
 -- ==========================================
--- PAULINO MM2 - SCRIPT COMPLETO (GRAB GUN FIX)
+-- PAULINO MM2 - SCRIPT COMPLETO (COM ANTI-AFK)
 -- ==========================================
 
 local Players = game:GetService("Players")
@@ -7,6 +7,7 @@ local Workspace = game:GetService("Workspace")
 local CoreGui = game:GetService("CoreGui")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
+local VirtualUser = game:GetService("VirtualUser")
 
 local LocalPlayer = Players.LocalPlayer
 local Camera = Workspace.CurrentCamera
@@ -19,9 +20,20 @@ local espActive = false
 local aimbotActive = false
 local freecamActive = false
 local aFazerFling = false
+local antiAfkAtivo = false
 
 local antiFlingConnection = nil
 local freecamConn = nil
+
+-- ==========================================
+-- ANTI-AFK LOGIC
+-- ==========================================
+LocalPlayer.Idled:Connect(function()
+    if antiAfkAtivo then
+        VirtualUser:CaptureController()
+        VirtualUser:ClickButton2(Vector2.new())
+    end
+end)
 
 -- ==========================================
 -- VERIFICAÇÕES DE ROUND E VIDA
@@ -321,12 +333,23 @@ local function addLabel(page, text)
 end
 
 addLabel(pages.Home, "Bem-vindo ao Paulino Hub!")
+
+-- BOTÃO ANTI-AFK ADICIONADO
+local AntiAfkBtn = addButton(pages.Home, "Anti-AFK: DESLIGADO")
+AntiAfkBtn.MouseButton1Click:Connect(function()
+    antiAfkAtivo = not antiAfkAtivo
+    AntiAfkBtn.Text = antiAfkAtivo and "Anti-AFK: LIGADO" or "Anti-AFK: DESLIGADO"
+    AntiAfkBtn.BackgroundColor3 = antiAfkAtivo and Color3.fromRGB(40, 180, 90) or Color3.fromRGB(255, 255, 255)
+    AntiAfkBtn.TextColor3 = antiAfkAtivo and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(25, 25, 35)
+end)
+
 local CloseBtn = addButton(pages.Home, "Parar Tudo / Fechar Hub")
 CloseBtn.MouseButton1Click:Connect(function()
     _G.PaulinoMenuRunning = false
     lobbyFarmAtivo = false
     xpFarmAtivo = false
     espActive = false
+    antiAfkAtivo = false
     if antiFlingConnection then antiFlingConnection:Disconnect() end
     if ScreenGui then ScreenGui:Destroy() end
 end)
@@ -368,7 +391,7 @@ local function getPlayerColorAndRole(p)
 end
 
 -- ==========================================
--- PEGAR ARMA (CORRIGIDO)
+-- PEGAR ARMA
 -- ==========================================
 local function grabGunFromFloor()
     task.spawn(function()
