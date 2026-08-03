@@ -1,5 +1,5 @@
 -- ==========================================
--- PAULINO MM2 - SCRIPT COMPLETO (SPEED E JUMP)
+-- PAULINO MM2 - SCRIPT COMPLETO (FLING QUALQUER PLAYER)
 -- ==========================================
 
 local Players = game:GetService("Players")
@@ -642,7 +642,7 @@ FarmXpBtn.MouseButton1Click:Connect(function()
     xpFarmAtivo = not xpFarmAtivo
     FarmXpBtn.Text = xpFarmAtivo and "FarmXP (Lobby All Rounds): LIGADO" or "FarmXP (Lobby All Rounds): DESLIGADO"
     FarmXpBtn.BackgroundColor3 = xpFarmAtivo and Color3.fromRGB(40, 180, 90) or Color3.fromRGB(255, 255, 255)
-    FarmXpBtn.TextColor3 = xpFarmAtivo and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(25, 25, 35)
+    FarmXpBtn.TextColor3 = xpFarmAtivo and Color3.fromRGB(40, 180, 90) or Color3.fromRGB(25, 25, 35)
 end)
 
 task.spawn(function()
@@ -897,6 +897,7 @@ end)
 -- ==========================================
 local KillMurderBtn = addButton(pages.Troll, "⚔️ Matar Murderer (Fling)")
 local KillSheriffBtn = addButton(pages.Troll, "🛡️ Matar Sheriff (Fling)")
+local SelectFlingBtn = addButton(pages.Troll, "🌀 Fling em Jogador Específico")
 
 local function performFling(targetP, duration)
     if not targetP or not targetP.Character then return end
@@ -963,4 +964,45 @@ end)
 
 KillSheriffBtn.MouseButton1Click:Connect(function()
     ativarFlingTemporario(KillSheriffBtn, "🛡️ Matar Sheriff (Fling)", getSheriff)
+end)
+
+-- LISTA DE JOGADORES PARA FLING ESPECÍFICO
+local FlingListFrame = Instance.new("ScrollingFrame")
+FlingListFrame.Size = UDim2.new(0, 180, 0, 180)
+FlingListFrame.Position = UDim2.new(1, 10, 0, 100)
+FlingListFrame.BackgroundColor3 = Color3.fromRGB(245, 245, 250)
+FlingListFrame.BackgroundTransparency = 0.2
+FlingListFrame.BorderSizePixel = 0
+FlingListFrame.Visible = false
+FlingListFrame.Parent = MainFrame
+
+local FlingListLayout = Instance.new("UIListLayout")
+FlingListLayout.Parent = FlingListFrame
+
+SelectFlingBtn.MouseButton1Click:Connect(function()
+    FlingListFrame.Visible = not FlingListFrame.Visible
+    if FlingListFrame.Visible then
+        for _, child in ipairs(FlingListFrame:GetChildren()) do if child:IsA("TextButton") then child:Destroy() end end
+        for _, p in ipairs(Players:GetPlayers()) do
+            if p ~= LocalPlayer then
+                local color, role = getPlayerColorAndRole(p)
+                local btn = Instance.new("TextButton")
+                btn.Size = UDim2.new(1, 0, 0, 30)
+                btn.Text = " 💥 " .. p.Name .. " " .. role
+                btn.TextColor3 = color
+                btn.TextSize = 11
+                btn.Font = Enum.Font.GothamBold
+                btn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                btn.BorderSizePixel = 0
+                btn.Parent = FlingListFrame
+                
+                btn.MouseButton1Click:Connect(function()
+                    FlingListFrame.Visible = false
+                    task.spawn(function()
+                        performFling(p, 1.0)
+                    end)
+                end)
+            end
+        end
+    end
 end)
