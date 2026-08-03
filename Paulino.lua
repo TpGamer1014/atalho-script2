@@ -1,5 +1,5 @@
 -- ==========================================
--- PAULINO MM2 - SCRIPT COMPLETO (DESIGN MINIMIZADO CUSTOM)
+-- PAULINO MM2 - SCRIPT COMPLETO (FINAL)
 -- ==========================================
 
 local Players = game:GetService("Players")
@@ -11,6 +11,15 @@ local VirtualUser = game:GetService("VirtualUser")
 
 local LocalPlayer = Players.LocalPlayer
 local Camera = Workspace.CurrentCamera
+
+-- Limpa versões antigas antes de carregar
+local function cleanOldGui()
+    local target = gethui and gethui() or (pcall(function() return CoreGui end) and CoreGui) or LocalPlayer:FindFirstChildOfClass("PlayerGui")
+    if target and target:FindFirstChild("PaulinoGUI") then
+        target.PaulinoGUI:Destroy()
+    end
+end
+cleanOldGui()
 
 _G.PaulinoMenuRunning = true
 
@@ -105,9 +114,6 @@ local function getGuiContainer()
 end
 
 local parentContainer = getGuiContainer()
-if parentContainer:FindFirstChild("PaulinoGUI") then
-    parentContainer.PaulinoGUI:Destroy()
-end
 
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "PaulinoGUI"
@@ -171,33 +177,35 @@ local MinCorner = Instance.new("UICorner")
 MinCorner.CornerRadius = UDim.new(0, 6)
 MinCorner.Parent = MinimizeButton
 
--- BOTÃO MINIMIZADO CUSTOMIZADO (IGUAL À IMAGEM)
+-- BOTÃO MINIMIZADO CUSTOMIZADO (ALINHADO À ESQUERDA)
 local OpenButton = Instance.new("TextButton")
-OpenButton.Size = UDim2.new(0, 125, 0, 36)
-OpenButton.Position = UDim2.new(0, -10, 0.5, -18)
+OpenButton.Name = "OpenButton"
+OpenButton.Size = UDim2.new(0, 135, 0, 38)
+OpenButton.AnchorPoint = Vector2.new(0, 0.5)
+OpenButton.Position = UDim2.new(0, 0, 0.45, 0)
 OpenButton.Text = "☀️  🌸 Paulin"
 OpenButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-OpenButton.TextSize = 14
+OpenButton.TextSize = 15
 OpenButton.Font = Enum.Font.GothamBold
-OpenButton.BackgroundColor3 = Color3.fromRGB(18, 24, 28)
-OpenButton.BackgroundTransparency = 0.15
+OpenButton.BackgroundColor3 = Color3.fromRGB(15, 18, 22)
+OpenButton.BackgroundTransparency = 0.05
 OpenButton.BorderSizePixel = 0
 OpenButton.Visible = false
 OpenButton.Parent = ScreenGui
 
 local OpenCorner = Instance.new("UICorner")
-OpenCorner.CornerRadius = UDim.new(0, 18)
+OpenCorner.CornerRadius = UDim.new(0, 19)
 OpenCorner.Parent = OpenButton
 
 local OpenStroke = Instance.new("UIStroke")
-OpenStroke.Thickness = 2
-OpenStroke.Transparency = 0.1
+OpenStroke.Thickness = 2.5
+OpenStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 OpenStroke.Parent = OpenButton
 
 local OpenGradient = Instance.new("UIGradient")
 OpenGradient.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 215, 0)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 230, 160))
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 220, 0)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 255, 160))
 })
 OpenGradient.Parent = OpenStroke
 
@@ -492,12 +500,9 @@ local function grabGunFromFloor()
 
         if gunPart then
             local savedCFrame = myRoot.CFrame
-
             myRoot.AssemblyLinearVelocity = Vector3.zero
             myRoot.CFrame = gunPart.CFrame
-            
             task.wait(0.25)
-
             myRoot.CFrame = savedCFrame
             myRoot.AssemblyLinearVelocity = Vector3.zero
         end
@@ -649,7 +654,7 @@ FarmXpBtn.MouseButton1Click:Connect(function()
     xpFarmAtivo = not xpFarmAtivo
     FarmXpBtn.Text = xpFarmAtivo and "FarmXP (Lobby All Rounds): LIGADO" or "FarmXP (Lobby All Rounds): DESLIGADO"
     FarmXpBtn.BackgroundColor3 = xpFarmAtivo and Color3.fromRGB(40, 180, 90) or Color3.fromRGB(255, 255, 255)
-    FarmXpBtn.TextColor3 = xpFarmAtivo and Color3.fromRGB(40, 180, 90) or Color3.fromRGB(25, 25, 35)
+    FarmXpBtn.TextColor3 = xpFarmAtivo and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(25, 25, 35)
 end)
 
 task.spawn(function()
