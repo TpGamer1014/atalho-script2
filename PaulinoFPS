@@ -1,0 +1,119 @@
+Add-Type -AssemblyName System.Windows.Forms
+Add-Type -AssemblyName System.Drawing
+
+# --- JANELA PRINCIPAL ---
+$form = New-Object System.Windows.Forms.Form
+$form.Text = "Paulino Optimizer PRO - FPS & Limpeza"
+$form.Size = New-Object System.Drawing.Size(520, 500)
+$form.StartPosition = "CenterScreen"
+$form.BackColor = [System.Drawing.Color]::FromArgb(15, 32, 67)
+$form.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::FixedDialog
+$form.MaximizeBox = $false
+
+# --- TÍTULO ---
+$labelTitle = New-Object System.Windows.Forms.Label
+$labelTitle.Text = "Paulino FPS & Limpeza Profunda"
+$labelTitle.Font = New-Object System.Drawing.Font("Segoe UI", 14, [System.Drawing.FontStyle]::Bold)
+$labelTitle.ForeColor = [System.Drawing.Color]::White
+$labelTitle.Location = New-Object System.Drawing.Point(30, 20)
+$labelTitle.Size = New-Object System.Drawing.Size(440, 30)
+$labelTitle.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
+$form.Controls.Add($labelTitle)
+
+# --- BOTÃO 1: LIMPEZA PROFUNDA DE LIXO ---
+$btnClean = New-Object System.Windows.Forms.Button
+$btnClean.Text = "1. Limpeza Profunda (Temporários + Prefetch)"
+$btnClean.Font = New-Object System.Drawing.Font("Segoe UI", 9, [System.Drawing.FontStyle]::Bold)
+$btnClean.Location = New-Object System.Drawing.Point(50, 80)
+$btnClean.Size = New-Object System.Drawing.Size(400, 45)
+$btnClean.BackColor = [System.Drawing.Color]::FromArgb(41, 128, 185)
+$btnClean.ForeColor = [System.Drawing.Color]::White
+$btnClean.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+$btnClean.Add_Click({
+    try {
+        Remove-Item "$env:TEMP\*" -Recurse -Force -ErrorAction SilentlyContinue
+        Remove-Item "C:\Windows\Temp\*" -Recurse -Force -ErrorAction SilentlyContinue
+        Remove-Item "C:\Windows\Prefetch\*" -Recurse -Force -ErrorAction SilentlyContinue
+        Clear-RecycleBin -Force -ErrorAction SilentlyContinue
+        [System.Windows.Forms.MessageBox]::Show("Limpeza profunda concluída com sucesso!", "Paulino PRO", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
+    } catch {
+        [System.Windows.Forms.MessageBox]::Show("Alguns ficheiros estão em uso pelo sistema.", "Aviso", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Warning)
+    }
+})
+$form.Controls.Add($btnClean)
+
+# --- BOTÃO 2: DESEMPENHO MÁXIMO E PRIORIDADE ---
+$btnFPS = New-Object System.Windows.Forms.Button
+$btnFPS.Text = "2. Ativar Desempenho Máximo & Game Mode"
+$btnFPS.Font = New-Object System.Drawing.Font("Segoe UI", 9, [System.Drawing.FontStyle]::Bold)
+$btnFPS.Location = New-Object System.Drawing.Point(50, 145)
+$btnFPS.Size = New-Object System.Drawing.Size(400, 45)
+$btnFPS.BackColor = [System.Drawing.Color]::FromArgb(41, 128, 185)
+$btnFPS.ForeColor = [System.Drawing.Color]::White
+$btnFPS.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+$btnFPS.Add_Click({
+    powercfg -duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61 | Out-Null
+    powercfg /setactive e9a42b02-d5df-448d-aa00-03f14749eb61
+    Set-ItemProperty -Path "HKCU:\Software\Microsoft\GameBar" -Name "AutoGameModeEnabled" -Value 1 -ErrorAction SilentlyContinue
+    Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\PolicyManager\default\ApplicationManagement\AllowGameDVR" -Name "value" -Value 1 -ErrorAction SilentlyContinue
+    [System.Windows.Forms.MessageBox]::Show("Desempenho máximo e modo de jogo ativados!", "Paulino PRO", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
+})
+$form.Controls.Add($btnFPS)
+
+# --- BOTÃO 3: PARAR TELEMETRIA / OTIMIZAR REDE ---
+$btnNet = New-Object System.Windows.Forms.Button
+$btnNet.Text = "3. Otimizar Rede e Limpar DNS (Reduz Lag)"
+$btnNet.Font = New-Object System.Drawing.Font("Segoe UI", 9, [System.Drawing.FontStyle]::Bold)
+$btnNet.Location = New-Object System.Drawing.Point(50, 210)
+$btnNet.Size = New-Object System.Drawing.Size(400, 45)
+$btnNet.BackColor = [System.Drawing.Color]::FromArgb(41, 128, 185)
+$btnNet.ForeColor = [System.Drawing.Color]::White
+$btnNet.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+$btnNet.Add_Click({
+    Clear-DnsClientCache
+    netsh int ip reset | Out-Null
+    netsh winsock reset | Out-Null
+    [System.Windows.Forms.MessageBox]::Show("Rede otimizada e DNS limpo com sucesso!", "Paulino PRO", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
+})
+$form.Controls.Add($btnNet)
+
+# --- BOTÃO 4: EXECUTAR TUDO ---
+$btnAll = New-Object System.Windows.Forms.Button
+$btnAll.Text = "EXECUTAR TUDO (FPS + Limpeza Total)"
+$btnAll.Font = New-Object System.Drawing.Font("Segoe UI", 10, [System.Drawing.FontStyle]::Bold)
+$btnAll.Location = New-Object System.Drawing.Point(50, 285)
+$btnAll.Size = New-Object System.Drawing.Size(400, 55)
+$btnAll.BackColor = [System.Drawing.Color]::FromArgb(39, 174, 96)
+$btnAll.ForeColor = [System.Drawing.Color]::White
+$btnAll.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+$btnAll.Add_Click({
+    # Limpeza
+    Remove-Item "$env:TEMP\*" -Recurse -Force -ErrorAction SilentlyContinue
+    Remove-Item "C:\Windows\Temp\*" -Recurse -Force -ErrorAction SilentlyContinue
+    Remove-Item "C:\Windows\Prefetch\*" -Recurse -Force -ErrorAction SilentlyContinue
+    Clear-RecycleBin -Force -ErrorAction SilentlyContinue
+    
+    # Energia e FPS
+    powercfg -duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61 | Out-Null
+    powercfg /setactive e9a42b02-d5df-448d-aa00-03f14749eb61
+    Set-ItemProperty -Path "HKCU:\Software\Microsoft\GameBar" -Name "AutoGameModeEnabled" -Value 1 -ErrorAction SilentlyContinue
+    
+    # Rede
+    Clear-DnsClientCache
+    
+    [System.Windows.Forms.MessageBox]::Show("Otimização total aplicada! Reinicia o PC para melhores resultados.", "Paulino PRO", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
+})
+$form.Controls.Add($btnAll)
+
+# --- RODAPÉ ---
+$labelFooter = New-Object System.Windows.Forms.Label
+$labelFooter.Text = "Painel Exclusivo de Paulino • 100% Seguro"
+$labelFooter.Font = New-Object System.Drawing.Font("Segoe UI", 8, [System.Drawing.FontStyle]::Italic)
+$labelFooter.ForeColor = [System.Drawing.Color]::LightGray
+$labelFooter.Location = New-Object System.Drawing.Point(30, 390)
+$labelFooter.Size = New-Object System.Drawing.Size(440, 20)
+$labelFooter.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
+$form.Controls.Add($labelFooter)
+
+# Mostrar Janela
+[void]$form.ShowDialog()
