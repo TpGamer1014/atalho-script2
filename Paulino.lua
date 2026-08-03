@@ -1,5 +1,5 @@
 -- ==========================================
--- PAULINO MM2 - SCRIPT COMPLETO (FIX DEFINITIVO GRAB GUN)
+-- PAULINO MM2 - SCRIPT COMPLETO (BLUR & TRANSPARÊNCIA DINÂMICA)
 -- ==========================================
 
 local Players = game:GetService("Players")
@@ -8,6 +8,7 @@ local CoreGui = game:GetService("CoreGui")
 local RunService = game:GetService("RunService")
 local HttpService = game:GetService("HttpService")
 local UserInputService = game:GetService("UserInputService")
+local Lighting = game:GetService("Lighting")
 
 local LocalPlayer = Players.LocalPlayer
 local Camera = Workspace.CurrentCamera
@@ -66,13 +67,24 @@ ScreenGui.ResetOnSpawn = false
 ScreenGui.Enabled = true
 ScreenGui.Parent = parentContainer
 
+-- Efeito de Blur de Fundo Forte no Mundo
+local BlurEffect = Instance.new("BlurEffect")
+BlurEffect.Name = "PaulinoWorldBlur"
+BlurEffect.Size = 18
+BlurEffect.Parent = Lighting
+
 local MainFrame = Instance.new("Frame")
 MainFrame.Size = UDim2.new(0, 520, 0, 360)
 MainFrame.Position = UDim2.new(0.5, -260, 0.5, -180)
-MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
-MainFrame.BackgroundTransparency = 0.25
+MainFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 16)
+MainFrame.BackgroundTransparency = 0.35
 MainFrame.BorderSizePixel = 0
 MainFrame.Parent = ScreenGui
+
+-- Blur interno fraco para o fundo principal
+local MainBlur = Instance.new("UIBlurEffect")
+MainBlur.Size = 8
+MainBlur.Parent = MainFrame
 
 local MainCorner = Instance.new("UICorner")
 MainCorner.CornerRadius = UDim.new(0, 10)
@@ -80,8 +92,8 @@ MainCorner.Parent = MainFrame
 
 local TopBar = Instance.new("Frame")
 TopBar.Size = UDim2.new(1, 0, 0, 35)
-TopBar.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
-TopBar.BackgroundTransparency = 0.3
+TopBar.BackgroundColor3 = Color3.fromRGB(18, 18, 24)
+TopBar.BackgroundTransparency = 0.25
 TopBar.BorderSizePixel = 0
 TopBar.Parent = MainFrame
 
@@ -107,8 +119,8 @@ MinimizeButton.Text = "-"
 MinimizeButton.TextColor3 = Color3.fromRGB(240, 240, 245)
 MinimizeButton.TextSize = 16
 MinimizeButton.Font = Enum.Font.GothamBold
-MinimizeButton.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
-MinimizeButton.BackgroundTransparency = 0.3
+MinimizeButton.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+MinimizeButton.BackgroundTransparency = 0.4
 MinimizeButton.BorderSizePixel = 0
 MinimizeButton.Parent = TopBar
 
@@ -119,7 +131,7 @@ OpenButton.Text = "OPEN"
 OpenButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 OpenButton.TextSize = 12
 OpenButton.Font = Enum.Font.GothamBold
-OpenButton.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+OpenButton.BackgroundColor3 = Color3.fromRGB(12, 12, 16)
 OpenButton.BackgroundTransparency = 0.4
 OpenButton.BorderSizePixel = 0
 OpenButton.Visible = false
@@ -134,12 +146,14 @@ MinimizeButton.MouseButton1Click:Connect(function()
     minimized = not minimized
     MainFrame.Visible = not minimized
     OpenButton.Visible = minimized
+    BlurEffect.Enabled = not minimized
 end)
 
 OpenButton.MouseButton1Click:Connect(function()
     minimized = not minimized
     MainFrame.Visible = not minimized
     OpenButton.Visible = minimized
+    BlurEffect.Enabled = not minimized
 end)
 
 -- Arrastar GUI
@@ -169,8 +183,8 @@ end)
 local Sidebar = Instance.new("ScrollingFrame")
 Sidebar.Size = UDim2.new(0, 140, 1, -35)
 Sidebar.Position = UDim2.new(0, 0, 0, 35)
-Sidebar.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
-Sidebar.BackgroundTransparency = 0.4
+Sidebar.BackgroundColor3 = Color3.fromRGB(8, 8, 12)
+Sidebar.BackgroundTransparency = 0.5
 Sidebar.BorderSizePixel = 0
 Sidebar.CanvasSize = UDim2.new(0, 0, 0, 300)
 Sidebar.ScrollBarThickness = 2
@@ -223,8 +237,8 @@ local function createTabButton(name, displayName, default)
     btn.TextSize = 12
     btn.Font = Enum.Font.GothamMedium
     btn.TextXAlignment = Enum.TextXAlignment.Left
-    btn.BackgroundColor3 = default and Color3.fromRGB(45, 45, 55) or Color3.fromRGB(20, 20, 24)
-    btn.BackgroundTransparency = default and 0.3 or 0.6
+    btn.BackgroundColor3 = default and Color3.fromRGB(30, 30, 40) or Color3.fromRGB(15, 15, 20)
+    btn.BackgroundTransparency = default and 0.4 or 0.7
     btn.BorderSizePixel = 0
     btn.Parent = Sidebar
     
@@ -239,13 +253,13 @@ local function createTabButton(name, displayName, default)
         for pName, pObj in pairs(pages) do pObj.Visible = (pName == name) end
         for _, b in ipairs(Sidebar:GetChildren()) do
             if b:IsA("TextButton") then
-                b.BackgroundColor3 = Color3.fromRGB(20, 20, 24)
-                b.BackgroundTransparency = 0.6
+                b.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+                b.BackgroundTransparency = 0.7
                 b.TextColor3 = Color3.fromRGB(160, 160, 170)
             end
         end
-        btn.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
-        btn.BackgroundTransparency = 0.3
+        btn.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+        btn.BackgroundTransparency = 0.4
         btn.TextColor3 = Color3.fromRGB(255, 255, 255)
     end)
 end
@@ -264,8 +278,8 @@ local function addButton(page, text)
     btn.TextColor3 = Color3.fromRGB(240, 240, 245)
     btn.TextSize = 12
     btn.Font = Enum.Font.GothamBold
-    btn.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
-    btn.BackgroundTransparency = 0.3
+    btn.BackgroundColor3 = Color3.fromRGB(22, 22, 30)
+    btn.BackgroundTransparency = 0.4
     btn.BorderSizePixel = 0
     btn.Parent = page
     
@@ -297,6 +311,7 @@ CloseBtn.MouseButton1Click:Connect(function()
     xpFarmAtivo = false
     espActive = false
     if antiFlingConnection then antiFlingConnection:Disconnect() end
+    if BlurEffect then BlurEffect:Destroy() end
     if ScreenGui then ScreenGui:Destroy() end
 end)
 
@@ -347,16 +362,13 @@ local function grabGunFromFloor()
     
     for _, obj in ipairs(Workspace:GetDescendants()) do
         if (obj.Name == "GunDrop" or obj.Name:lower():find("gundrop")) and obj:IsA("BasePart") then
-            -- Captura a posição EXATA onde o jogador está no exato momento do clique
             local savedCFrame = myRoot.CFrame
             
             myRoot.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
             myRoot.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
             
-            -- Teleporta para a arma
             myRoot.CFrame = obj.CFrame + Vector3.new(0, 1, 0)
             
-            -- Espera um frame físico e retorna imediatamente para a posição salva
             RunService.Heartbeat:Wait()
             myRoot.CFrame = savedCFrame
             myRoot.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
@@ -377,7 +389,7 @@ local SelectPlayerButton = addButton(pages.Combat, "Selecionar Jogador para TP")
 AimbotButton.MouseButton1Click:Connect(function()
     aimbotActive = not aimbotActive
     AimbotButton.Text = aimbotActive and "Aimbot (E): LIGADO" or "Aimbot (E): DESLIGADO"
-    AimbotButton.BackgroundColor3 = aimbotActive and Color3.fromRGB(50, 160, 80) or Color3.fromRGB(35, 35, 42)
+    AimbotButton.BackgroundColor3 = aimbotActive and Color3.fromRGB(50, 160, 80) or Color3.fromRGB(22, 22, 30)
 end)
 
 RunService.RenderStepped:Connect(function()
@@ -414,15 +426,15 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     elseif input.KeyCode == Enum.KeyCode.E then
         aimbotActive = not aimbotActive
         AimbotButton.Text = aimbotActive and "Aimbot (E): LIGADO" or "Aimbot (E): DESLIGADO"
-        AimbotButton.BackgroundColor3 = aimbotActive and Color3.fromRGB(50, 160, 80) or Color3.fromRGB(35, 35, 42)
+        AimbotButton.BackgroundColor3 = aimbotActive and Color3.fromRGB(50, 160, 80) or Color3.fromRGB(22, 22, 30)
     end
 end)
 
 local PlayerListFrame = Instance.new("ScrollingFrame")
 PlayerListFrame.Size = UDim2.new(0, 180, 0, 180)
 PlayerListFrame.Position = UDim2.new(1, 10, 0, 0)
-PlayerListFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 36)
-PlayerListFrame.BackgroundTransparency = 0.2
+PlayerListFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 24)
+PlayerListFrame.BackgroundTransparency = 0.3
 PlayerListFrame.BorderSizePixel = 0
 PlayerListFrame.Visible = false
 PlayerListFrame.Parent = MainFrame
@@ -443,7 +455,7 @@ SelectPlayerButton.MouseButton1Click:Connect(function()
                 btn.TextColor3 = color
                 btn.TextSize = 11
                 btn.Font = Enum.Font.GothamBold
-                btn.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
+                btn.BackgroundColor3 = Color3.fromRGB(22, 22, 30)
                 btn.BorderSizePixel = 0
                 btn.Parent = PlayerListFrame
                 
@@ -481,20 +493,20 @@ end
 AutoFarmButton.MouseButton1Click:Connect(function()
     farmAtivo = not farmAtivo
     AutoFarmButton.Text = farmAtivo and "Auto Farm: LIGADO" or "Auto Farm: DESLIGADO"
-    AutoFarmButton.BackgroundColor3 = farmAtivo and Color3.fromRGB(50, 160, 80) or Color3.fromRGB(35, 35, 42)
+    AutoFarmButton.BackgroundColor3 = farmAtivo and Color3.fromRGB(50, 160, 80) or Color3.fromRGB(22, 22, 30)
     if not farmAtivo then toggleNoclip(false) end
 end)
 
 AutoLobbyBtn.MouseButton1Click:Connect(function()
     lobbyFarmAtivo = not lobbyFarmAtivo
     AutoLobbyBtn.Text = lobbyFarmAtivo and "Auto Lobby Farm: LIGADO" or "Auto Lobby Farm: DESLIGADO"
-    AutoLobbyBtn.BackgroundColor3 = lobbyFarmAtivo and Color3.fromRGB(50, 160, 80) or Color3.fromRGB(35, 35, 42)
+    AutoLobbyBtn.BackgroundColor3 = lobbyFarmAtivo and Color3.fromRGB(50, 160, 80) or Color3.fromRGB(22, 22, 30)
 end)
 
 FarmXpBtn.MouseButton1Click:Connect(function()
     xpFarmAtivo = not xpFarmAtivo
     FarmXpBtn.Text = xpFarmAtivo and "FarmXP (Lobby All Rounds): LIGADO" or "FarmXP (Lobby All Rounds): DESLIGADO"
-    FarmXpBtn.BackgroundColor3 = xpFarmAtivo and Color3.fromRGB(50, 160, 80) or Color3.fromRGB(35, 35, 42)
+    FarmXpBtn.BackgroundColor3 = xpFarmAtivo and Color3.fromRGB(50, 160, 80) or Color3.fromRGB(22, 22, 30)
 end)
 
 task.spawn(function()
@@ -538,7 +550,7 @@ end
 EspButton.MouseButton1Click:Connect(function()
     espActive = not espActive
     EspButton.Text = espActive and "ESP Roles: LIGADO" or "ESP Roles: DESLIGADO"
-    EspButton.BackgroundColor3 = espActive and Color3.fromRGB(50, 160, 80) or Color3.fromRGB(35, 35, 42)
+    EspButton.BackgroundColor3 = espActive and Color3.fromRGB(50, 160, 80) or Color3.fromRGB(22, 22, 30)
     if not espActive then clearESP() end
 end)
 
@@ -621,7 +633,7 @@ local freecamRotY = 0
 FreecamLivreBtn.MouseButton1Click:Connect(function()
     freecamActive = not freecamActive
     FreecamLivreBtn.Text = freecamActive and "Freecam Livre: LIGADO" or "Freecam Livre: DESLIGADO"
-    FreecamLivreBtn.BackgroundColor3 = freecamActive and Color3.fromRGB(50, 160, 80) or Color3.fromRGB(35, 35, 42)
+    FreecamLivreBtn.BackgroundColor3 = freecamActive and Color3.fromRGB(50, 160, 80) or Color3.fromRGB(22, 22, 30)
     
     if freecamActive then
         Camera.CameraType = Enum.CameraType.Scriptable
@@ -670,8 +682,8 @@ end)
 local CameraListFrame = Instance.new("ScrollingFrame")
 CameraListFrame.Size = UDim2.new(0, 180, 0, 180)
 CameraListFrame.Position = UDim2.new(1, 10, 0, 60)
-CameraListFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 36)
-CameraListFrame.BackgroundTransparency = 0.2
+CameraListFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 24)
+CameraListFrame.BackgroundTransparency = 0.3
 CameraListFrame.BorderSizePixel = 0
 CameraListFrame.Visible = false
 CameraListFrame.Parent = MainFrame
@@ -692,7 +704,7 @@ FreecamPlayerButton.MouseButton1Click:Connect(function()
                 btn.TextColor3 = color
                 btn.TextSize = 11
                 btn.Font = Enum.Font.GothamBold
-                btn.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
+                btn.BackgroundColor3 = Color3.fromRGB(22, 22, 30)
                 btn.BorderSizePixel = 0
                 btn.Parent = CameraListFrame
                 
@@ -700,7 +712,7 @@ FreecamPlayerButton.MouseButton1Click:Connect(function()
                     if freecamActive then
                         freecamActive = false
                         FreecamLivreBtn.Text = "Freecam Livre: DESLIGADO"
-                        FreecamLivreBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
+                        FreecamLivreBtn.BackgroundColor3 = Color3.fromRGB(22, 22, 30)
                         if freecamConn then freecamConn:Disconnect() freecamConn = nil end
                         UserInputService.MouseBehavior = Enum.MouseBehavior.Default
                     end
@@ -721,7 +733,7 @@ ResetCamButton.MouseButton1Click:Connect(function()
     if freecamActive then
         freecamActive = false
         FreecamLivreBtn.Text = "Freecam Livre: DESLIGADO"
-        FreecamLivreBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
+        FreecamLivreBtn.BackgroundColor3 = Color3.fromRGB(22, 22, 30)
         if freecamConn then freecamConn:Disconnect() freecamConn = nil end
         UserInputService.MouseBehavior = Enum.MouseBehavior.Default
     end
@@ -729,7 +741,7 @@ ResetCamButton.MouseButton1Click:Connect(function()
         Camera.CameraType = Enum.CameraType.Custom
         Camera.CameraSubject = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
         FreecamPlayerButton.Text = "Espectar Jogador"
-        FreecamPlayerButton.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
+        FreecamPlayerButton.BackgroundColor3 = Color3.fromRGB(22, 22, 30)
     end
 end)
 
@@ -775,11 +787,12 @@ local function ativarFlingTemporario(btn, textoOriginal, getAlvoFunc)
     task.spawn(function()
         performFling(getAlvoFunc(), 1.5)
         btn.Text = textoOriginal
-        btn.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
+        btn.BackgroundColor3 = Color3.fromRGB(22, 22, 30)
     end)
 end
 
 KillMurderBtn.MouseButton1Click:Connect(function()
+    ativarFlinkTemporario = nil -- dummy
     ativarFlingTemporario(KillMurderBtn, "⚔️ Matar Murderer (Fling)", getMurderer)
 end)
 
