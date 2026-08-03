@@ -1,5 +1,5 @@
 -- ==========================================
--- PAULINO MM2 - SCRIPT COMPLETO (BLUR & TRANSPARÊNCIA DINÂMICA)
+-- PAULINO MM2 - SCRIPT COMPLETO E CORRIGIDO
 -- ==========================================
 
 local Players = game:GetService("Players")
@@ -21,6 +21,7 @@ local xpFarmAtivo = false
 local espActive = false
 local aimbotActive = false
 local freecamActive = false
+local aFazerFling = false
 
 local noclipConnection = nil
 local antiFlingConnection = nil
@@ -32,7 +33,7 @@ local freecamConn = nil
 local function iniciarAntiFling()
     if antiFlingConnection then antiFlingConnection:Disconnect() end
     antiFlingConnection = RunService.Stepped:Connect(function()
-        if not _G.PaulinoMenuRunning then return end
+        if not _G.PaulinoMenuRunning or aFazerFling then return end
         for _, player in ipairs(Players:GetPlayers()) do
             if player ~= LocalPlayer and player.Character then
                 for _, part in ipairs(player.Character:GetDescendants()) do
@@ -67,7 +68,6 @@ ScreenGui.ResetOnSpawn = false
 ScreenGui.Enabled = true
 ScreenGui.Parent = parentContainer
 
--- Efeito de Blur de Fundo Forte no Mundo
 local BlurEffect = Instance.new("BlurEffect")
 BlurEffect.Name = "PaulinoWorldBlur"
 BlurEffect.Size = 18
@@ -80,11 +80,6 @@ MainFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 16)
 MainFrame.BackgroundTransparency = 0.35
 MainFrame.BorderSizePixel = 0
 MainFrame.Parent = ScreenGui
-
--- Blur interno fraco para o fundo principal
-local MainBlur = Instance.new("UIBlurEffect")
-MainBlur.Size = 8
-MainBlur.Parent = MainFrame
 
 local MainCorner = Instance.new("UICorner")
 MainCorner.CornerRadius = UDim.new(0, 10)
@@ -232,7 +227,7 @@ local function createTabButton(name, displayName, default)
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(1, -10, 0, 32)
     btn.Position = UDim2.new(0, 5, 0, 0)
-    btn.Text = "   " .. displayName
+    btn.Text = "    " .. displayName
     btn.TextColor3 = default and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(160, 160, 170)
     btn.TextSize = 12
     btn.Font = Enum.Font.GothamMedium
@@ -352,13 +347,12 @@ local function getPlayerColorAndRole(p)
 end
 
 -- ==========================================
--- PEGAR ARMA CORRETO (SALVA A POSIÇÃO ANTES)
+-- PEGAR ARMA CORRETO
 -- ==========================================
 local function grabGunFromFloor()
     local myChar = LocalPlayer.Character
     local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
-    local myHumanoid = myChar and myChar:FindFirstChildOfClass("Humanoid")
-    if not myRoot or not myHumanoid then return end
+    if not myRoot then return end
     
     for _, obj in ipairs(Workspace:GetDescendants()) do
         if (obj.Name == "GunDrop" or obj.Name:lower():find("gundrop")) and obj:IsA("BasePart") then
@@ -369,7 +363,8 @@ local function grabGunFromFloor()
             
             myRoot.CFrame = obj.CFrame + Vector3.new(0, 1, 0)
             
-            RunService.Heartbeat:Wait()
+            task.wait(0.15) -- Tempo para o servidor registar o toque
+            
             myRoot.CFrame = savedCFrame
             myRoot.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
             myRoot.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
@@ -746,7 +741,7 @@ ResetCamButton.MouseButton1Click:Connect(function()
 end)
 
 -- ==========================================
--- ABA TROLL & FLING MATAR
+-- ABA TROLL & FLING MATAR (1 SEGUNDO DE GIRO)
 -- ==========================================
 local KillMurderBtn = addButton(pages.Troll, "⚔️ Matar Murderer (Fling)")
 local KillSheriffBtn = addButton(pages.Troll, "🛡️ Matar Sheriff (Fling)")
@@ -755,28 +750,45 @@ local function performFling(targetP, duration)
     if not targetP or not targetP.Character then return end
     local myChar = LocalPlayer.Character
     local myHrp = myChar and myChar:FindFirstChild("HumanoidRootPart")
+    local myHum = myChar and myChar:FindFirstChildOfClass("Humanoid")
     local targetHrp = targetP.Character:FindFirstChild("HumanoidRootPart")
     
     if not myHrp or not targetHrp then return end
     
+    aFazerFling = true
     local savedCFrame = myHrp.CFrame
+    
     local bV = Instance.new("BodyVelocity")
     bV.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-    bV.Velocity = Vector3.new(999999, 999999, 999999)
+    bV.Velocity = Vector3.new(0, 0, 0)
     bV.Parent = myHrp
     
+    local bAV = Instance.new("BodyAngularVelocity")
+    bAV.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+    bAV.AngularVelocity = Vector3.new(0, 99999, 0)
+    bAV.Parent = myHrp
+    
     local startTime = tick()
-    while (tick() - startTime) < (duration or 1.5) and targetHrp and targetHrp.Parent do
-        myHrp.CFrame = targetHrp.CFrame + Vector3.new(math.random(-1, 1), 0, math.random(-1, 1))
-        myHrp.AssemblyLinearVelocity = Vector3.new(999999, 999999, 999999)
-        myHrp.AssemblyAngularVelocity = Vector3.new(999999, 999999, 999999)
+    while (tick() - startTime) < (duration or 1.0) and targetHrp and targetHrp.Parent do
+        myHrp.CFrame = targetHrp.CFrame
         RunService.Heartbeat:Wait()
     end
     
     bV:Destroy()
+    bAV:Destroy()
+    
     myHrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
     myHrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+    if myHum then myHum.Sit = false end
+    
+    task.wait(0.05)
     myHrp.CFrame = savedCFrame
+    task.wait(0.05)
+    myHrp.CFrame = savedCFrame
+    myHrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+    myHrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+    
+    aFazerFling = false
 end
 
 local function ativarFlingTemporario(btn, textoOriginal, getAlvoFunc)
@@ -785,14 +797,13 @@ local function ativarFlingTemporario(btn, textoOriginal, getAlvoFunc)
     btn.BackgroundColor3 = Color3.fromRGB(50, 160, 80)
     
     task.spawn(function()
-        performFling(getAlvoFunc(), 1.5)
+        performFling(getAlvoFunc(), 1.0)
         btn.Text = textoOriginal
         btn.BackgroundColor3 = Color3.fromRGB(22, 22, 30)
     end)
 end
 
 KillMurderBtn.MouseButton1Click:Connect(function()
-    ativarFlinkTemporario = nil -- dummy
     ativarFlingTemporario(KillMurderBtn, "⚔️ Matar Murderer (Fling)", getMurderer)
 end)
 
