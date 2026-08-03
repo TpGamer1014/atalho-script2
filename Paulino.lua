@@ -27,6 +27,8 @@ local xpFarmAtivo = false
 local espActive = false
 local aimbotActive = false
 local freecamActive = false
+local freecamTpActive = false
+local flingRolesActive = false
 local aFazerFling = false
 local antiAfkAtivo = false
 
@@ -753,51 +755,132 @@ task.spawn(function()
     end
 end)
 
-local FreecamBtn = addButton(pages.Camera, "Freecam: DESLIGADO")
+local FreecamBtn = addButton(pages.Camera, "Freecam (Botão Direito): DESLIGADO")
+local FreecamTpBtn = addButton(pages.Camera, "Freecam + TP: DESLIGADO")
 local ResetCamButton = addButton(pages.Camera, "Voltar Câmera ao Normal")
+
+local freecamRotX = 0
+local freecamRotY = 0
 
 FreecamBtn.MouseButton1Click:Connect(function()
     freecamActive = not freecamActive
-    FreecamBtn.Text = freecamActive and "Freecam: LIGADO" or "Freecam: DESLIGADO"
+    FreecamBtn.Text = freecamActive and "Freecam (Botão Direito): LIGADO" or "Freecam (Botão Direito): DESLIGADO"
     FreecamBtn.BackgroundColor3 = freecamActive and Color3.fromRGB(40, 180, 90) or Color3.fromRGB(255, 255, 255)
     FreecamBtn.TextColor3 = freecamActive and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(25, 25, 35)
     
     if freecamActive then
         Camera.CameraType = Enum.CameraType.Scriptable
+        local rx, ry, _ = Camera.CFrame:ToOrientation()
+        freecamRotX = rx
+        freecamRotY = ry
+        
+        if freecamConn then freecamConn:Disconnect() end
+        freecamConn = RunService.RenderStepped:Connect(function()
+            if not freecamActive then return end
+            
+            if UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton2) then
+                UserInputService.MouseBehavior = Enum.MouseBehavior.LockCurrent
+                local delta = UserInputService:GetMouseDelta()
+                freecamRotX = math.clamp(freecamRotX - delta.Y * 0.003, -math.rad(89), math.rad(89))
+                freecamRotY = freecamRotY - delta.X * 0.003
+            else
+                UserInputService.MouseBehavior = Enum.MouseBehavior.Default
+            end
+            
+            local moveDir = Vector3.zero
+            if UserInputService:IsKeyDown(Enum.KeyCode.W) then moveDir = moveDir + Vector3.new(0, 0, -1) end
+            if UserInputService:IsKeyDown(Enum.KeyCode.S) then moveDir = moveDir + Vector3.new(0, 0, 1) end
+            if UserInputService:IsKeyDown(Enum.KeyCode.A) then moveDir = moveDir + Vector3.new(-1, 0, 0) end
+            if UserInputService:IsKeyDown(Enum.KeyCode.D) then moveDir = moveDir + Vector3.new(1, 0, 0) end
+            
+            local rotCF = CFrame.fromOrientation(freecamRotX, freecamRotY, 0)
+            Camera.CFrame = Camera.CFrame + (rotCF * moveDir * 1.5)
+            Camera.CFrame = CFrame.new(Camera.CFrame.Position) * rotCF
+        end)
     else
+        if freecamConn then freecamConn:Disconnect() end
         Camera.CameraType = Enum.CameraType.Custom
+        UserInputService.MouseBehavior = Enum.MouseBehavior.Default
+    end
+end)
+
+FreecamTpBtn.MouseButton1Click:Connect(function()
+    freecamTpActive = not freecamTpActive
+    FreecamTpBtn.Text = freecamTpActive and "Freecam + TP: LIGADO" or "Freecam + TP: DESLIGADO"
+    FreecamTpBtn.BackgroundColor3 = freecamTpActive and Color3.fromRGB(40, 180, 90) or Color3.fromRGB(255, 255, 255)
+    FreecamTpBtn.TextColor3 = freecamTpActive and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(25, 25, 35)
+    
+    if freecamTpActive then
+        task.spawn(function()
+            while freecamTpActive and _G.PaulinoMenuRunning do
+                local myRoot = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                if myRoot and freecamActive then
+                    myRoot.CFrame = Camera.CFrame
+                    myRoot.AssemblyLinearVelocity = Vector3.zero
+                end
+                task.wait(0.1)
+            end
+        end)
     end
 end)
 
 ResetCamButton.MouseButton1Click:Connect(function()
     freecamActive = false
-    FreecamBtn.Text = "Freecam: DESLIGADO"
+    freecamTpActive = false
+    FreecamBtn.Text = "Freecam (Botão Direito): DESLIGADO"
     FreecamBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     FreecamBtn.TextColor3 = Color3.fromRGB(25, 25, 35)
+    FreecamTpBtn.Text = "Freecam + TP: DESLIGADO"
+    FreecamTpBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    FreecamTpBtn.TextColor3 = Color3.fromRGB(25, 25, 35)
+    if freecamConn then freecamConn:Disconnect() end
     Camera.CameraType = Enum.CameraType.Custom
+    UserInputService.MouseBehavior = Enum.MouseBehavior.Default
 end)
 
-local FlingBtn = addButton(pages.Troll, "Fling All Players: DESLIGADO")
+local FlingBtn = addButton(pages.Troll, "Fling Murder/Sheriff (1s): DESLIGADO")
 FlingBtn.MouseButton1Click:Connect(function()
-    aFazerFling = not aFazerFling
-    FlingBtn.Text = aFazerFling and "Fling All Players: LIGADO" or "Fling All Players: DESLIGADO"
-    FlingBtn.BackgroundColor3 = aFazerFling and Color3.fromRGB(40, 180, 90) or Color3.fromRGB(255, 255, 255)
-    FlingBtn.TextColor3 = aFazerFling and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(25, 25, 35)
+    if flingRolesActive then return end
+    flingRolesActive = true
+    FlingBtn.Text = "Fling Murder/Sheriff (1s): LIGADO"
+    FlingBtn.BackgroundColor3 = Color3.fromRGB(40, 180, 90)
+    FlingBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
     
     task.spawn(function()
-        while aFazerFling and _G.PaulinoMenuRunning do
-            local myRoot = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-            if myRoot then
-                for _, p in ipairs(Players:GetPlayers()) do
-                    if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
-                        local targetRoot = p.Character.HumanoidRootPart
-                        myRoot.CFrame = targetRoot.CFrame
-                        myRoot.AssemblyLinearVelocity = Vector3.new(99999, 99999, 99999)
-                        task.wait(0.05)
-                    end
-                end
-            end
-            task.wait(0.1)
+        local myChar = LocalPlayer.Character
+        local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
+        if not myRoot then
+            flingRolesActive = false
+            FlingBtn.Text = "Fling Murder/Sheriff (1s): DESLIGADO"
+            FlingBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+            FlingBtn.TextColor3 = Color3.fromRGB(25, 25, 35)
+            return
         end
+        
+        local savedPos = myRoot.CFrame
+        local targetP = getMurderer() or getSheriff()
+        
+        if targetP and targetP.Character and targetP.Character:FindFirstChild("HumanoidRootPart") then
+            local targetRoot = targetP.Character.HumanoidRootPart
+            local startTime = tick()
+            aFazerFling = true
+            
+            while tick() - startTime < 1 and flingRolesActive and _G.PaulinoMenuRunning do
+                myRoot.CFrame = targetRoot.CFrame
+                myRoot.AssemblyLinearVelocity = Vector3.new(99999, 99999, 99999)
+                task.wait(0.05)
+            end
+            
+            aFazerFling = false
+            myRoot.CFrame = savedPos
+            myRoot.AssemblyLinearVelocity = Vector3.zero
+        else
+            aFazerFling = false
+        end
+        
+        flingRolesActive = false
+        FlingBtn.Text = "Fling Murder/Sheriff (1s): DESLIGADO"
+        FlingBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        FlingBtn.TextColor3 = Color3.fromRGB(25, 25, 35)
     end)
 end)
