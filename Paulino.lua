@@ -1,5 +1,5 @@
 -- ==========================================
--- PAULINO MM2 - SCRIPT COMPLETO (ATUALIZADO)
+-- PAULINO MM2 - SCRIPT CORRIGIDO (FLING FUNCIONAL)
 -- ==========================================
 
 local Players = game:GetService("Players")
@@ -73,6 +73,7 @@ local function isRoundActive()
     return (map ~= nil or coinContainer ~= nil)
 end
 
+-- Anti-Fling corrigido para não afetar o nosso próprio Fling
 local function iniciarAntiFling()
     if antiFlingConnection then antiFlingConnection:Disconnect() end
     antiFlingConnection = RunService.Stepped:Connect(function()
@@ -161,9 +162,6 @@ local MinCorner = Instance.new("UICorner")
 MinCorner.CornerRadius = UDim.new(0, 6)
 MinCorner.Parent = MinimizeButton
 
--- ==========================================
--- BOTÃO MINIMIZADO (PÍLULA)
--- ==========================================
 local OpenButtonBg = Instance.new("Frame")
 OpenButtonBg.Name = "OpenButtonBg"
 OpenButtonBg.Size = UDim2.new(0, 95, 0, 24)
@@ -177,23 +175,6 @@ OpenButtonBg.Parent = ScreenGui
 local OpenCorner = Instance.new("UICorner")
 OpenCorner.CornerRadius = UDim.new(1, 0)
 OpenCorner.Parent = OpenButtonBg
-
-local OpenGradient = Instance.new("UIGradient")
-OpenGradient.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 200, 200))
-})
-OpenGradient.Transparency = NumberSequence.new({
-    NumberSequenceKeypoint.new(0, 0.1),
-    NumberSequenceKeypoint.new(1, 0.6)
-})
-OpenGradient.Parent = OpenButtonBg
-
-local OpenStroke = Instance.new("UIStroke")
-OpenStroke.Color = Color3.fromRGB(255, 255, 255)
-OpenStroke.Transparency = 0.1
-OpenStroke.Thickness = 2.5
-OpenStroke.Parent = OpenButtonBg
 
 local OpenButton = Instance.new("TextButton")
 OpenButton.Name = "OpenButton"
@@ -837,6 +818,7 @@ ResetCamButton.MouseButton1Click:Connect(function()
     UserInputService.MouseBehavior = Enum.MouseBehavior.Default
 end)
 
+-- Sistema de Fling Corrigido e Funcional
 local function runFlingOnPlayer(targetP)
     local myChar = LocalPlayer.Character
     local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
@@ -847,17 +829,31 @@ local function runFlingOnPlayer(targetP)
     local startTime = tick()
     aFazerFling = true
     
-    while tick() - startTime < 1 and _G.PaulinoMenuRunning do
-        if targetRoot and targetRoot.Parent then
-            myRoot.CFrame = targetRoot.CFrame
-            myRoot.AssemblyLinearVelocity = Vector3.new(99999, 99999, 99999)
+    -- Ativar colisão de todas as partes locais para garantir força no fling
+    for _, part in ipairs(myChar:GetDescendants()) do
+        if part:IsA("BasePart") then
+            part.CanCollide = true
         end
-        task.wait(0.05)
     end
     
+    local connection
+    connection = RunService.Stepped:Connect(function()
+        if targetRoot and targetRoot.Parent and myRoot and myRoot.Parent then
+            myRoot.CFrame = targetRoot.CFrame * CFrame.Angles(math.random(-180, 180), math.random(-180, 180), math.random(-180, 180))
+            myRoot.AssemblyLinearVelocity = Vector3.new(30000, 30000, 30000)
+            myRoot.AssemblyAngularVelocity = Vector3.new(30000, 30000, 30000)
+        end
+    end)
+    
+    while tick() - startTime < 1 and _G.PaulinoMenuRunning do
+        task.wait()
+    end
+    
+    if connection then connection:Disconnect() end
     aFazerFling = false
     myRoot.CFrame = savedPos
     myRoot.AssemblyLinearVelocity = Vector3.zero
+    myRoot.AssemblyAngularVelocity = Vector3.zero
 end
 
 local FlingMurderBtn = addButton(pages.Troll, "Fling Murderer (1s)")
