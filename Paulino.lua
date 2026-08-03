@@ -1,5 +1,5 @@
 -- ==========================================
--- PAULINO MM2 - SCRIPT COMPLETO (CORRIGIDO)
+-- PAULINO MM2 - SCRIPT COMPLETO (FINAL FIX v4)
 -- ==========================================
 
 local Players = game:GetService("Players")
@@ -482,36 +482,42 @@ local function getPlayerColorAndRole(p)
 end
 
 -- ==========================================
--- PEGAR ARMA (CORRIGIDO DEFINITIVAMENTE)
+-- PEGAR ARMA (CORRIGIDO)
 -- ==========================================
 local function grabGunFromFloor()
     local myChar = LocalPlayer.Character
     local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
     local myHumanoid = myChar and myChar:FindFirstChildOfClass("Humanoid")
-    if not myRoot or not myHumanoid then return end
     
+    if not myRoot or not myHumanoid or myHumanoid.Health <= 0 then return end
+    if getPlayerTool(LocalPlayer) == "Gun" then return end
+    
+    local targetPart = nil
     for _, obj in ipairs(Workspace:GetDescendants()) do
-        if (obj.Name == "GunDrop" or obj.Name:lower():find("gundrop")) and obj:IsA("BasePart") then
-            -- Guarda a posição exata ANTES de qualquer alteração
-            local savedCFrame = myRoot.CFrame
-            
-            -- Zera a velocidade para não seres lançado
-            myRoot.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-            myRoot.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
-            
-            -- Teleporta para a arma
-            myRoot.CFrame = obj.CFrame + Vector3.new(0, 3, 0)
-            
-            -- Aguarda exatos 2 frames do jogo para garantir o registo da colisão
-            RunService.Heartbeat:Wait()
-            RunService.Heartbeat:Wait()
-            
-            -- Zera novamente e volta para a posição inicial guardada
-            myRoot.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-            myRoot.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
-            myRoot.CFrame = savedCFrame
-            break
+        if obj.Name == "GunDrop" or obj.Name:lower():find("gundrop") then
+            if obj:IsA("BasePart") then
+                targetPart = obj
+                break
+            elseif obj:IsA("Model") then
+                targetPart = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
+                if targetPart then break end
+            end
         end
+    end
+    
+    if targetPart then
+        local savedCFrame = myRoot.CFrame
+        pcall(function()
+            if firetouchinterest and targetPart:IsA("BasePart") then
+                firetouchinterest(myRoot, targetPart, 0)
+                task.wait()
+                firetouchinterest(myRoot, targetPart, 1)
+            end
+            
+            myRoot.CFrame = targetPart.CFrame + Vector3.new(0, 2, 0)
+            task.wait(0.1)
+            myRoot.CFrame = savedCFrame
+        end)
     end
 end
 
@@ -570,6 +576,8 @@ end)
 -- ==========================================
 -- FUNÇÃO AUXILIAR: CRIAR LISTA CINEMATOGRÁFICA
 -- ==========================================
+local activeCinematicLists = {}
+
 local function createCinematicList()
     local container = Instance.new("Frame")
     container.Size = UDim2.new(0, 190, 0, 190)
@@ -616,13 +624,40 @@ local function createCinematicList()
     container:GetPropertyChangedSignal("Visible"):Connect(function()
         if container.Visible then
             TweenService:Create(blur, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = 12}):Play()
+            table.insert(activeCinematicLists, container)
         else
             TweenService:Create(blur, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Size = 0}):Play()
+            for i, v in ipairs(activeCinematicLists) do
+                if v == container then
+                    table.remove(activeCinematicLists, i)
+                    break
+                end
+            end
         end
     end)
 
     return container, scroll
 end
+
+-- Fechar menus abertos ao clicar fora deles
+UserInputService.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        local mousePos = input.Position
+        for _, listFrame in ipairs(activeCinematicLists) do
+            if listFrame.Visible then
+                local absPos = listFrame.AbsolutePosition
+                local absSize = listFrame.AbsoluteSize
+                
+                local insideX = mousePos.X >= absPos.X and mousePos.X <= (absPos.X + absSize.X)
+                local insideY = mousePos.Y >= absPos.Y and mousePos.Y <= (absPos.Y + absSize.Y)
+                
+                if not (insideX and insideY) then
+                    listFrame.Visible = false
+                end
+            end
+        end
+    end
+end)
 
 -- ==========================================
 -- LISTA DE JOGADORES (COMBATE - TP)
