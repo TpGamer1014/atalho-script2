@@ -1,5 +1,5 @@
 -- ==========================================
--- PAULINO MM2 - SCRIPT COMPLETO (COM XP FARM)
+-- PAULINO MM2 - SCRIPT COMPLETO (FIX GRAB GUN)
 -- ==========================================
 
 local Players = game:GetService("Players")
@@ -337,7 +337,7 @@ local function getPlayerColorAndRole(p)
 end
 
 -- ==========================================
--- PEGAR ARMA
+-- PEGAR ARMA CORRIGIDO
 -- ==========================================
 local function grabGunFromFloor()
     local myChar = LocalPlayer.Character
@@ -352,19 +352,12 @@ local function grabGunFromFloor()
             myRoot.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
             myRoot.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
             
-            myRoot.CFrame = obj.CFrame + Vector3.new(0, 3, 0)
-            task.wait(0.2)
+            myRoot.CFrame = obj.CFrame + Vector3.new(0, 1, 0)
+            task.wait(0.05)
             
             myRoot.CFrame = savedCFrame
             myRoot.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
             myRoot.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
-            
-            task.delay(0.05, function()
-                if myRoot and (myRoot.Position - savedCFrame.Position).Magnitude > 5 then
-                    myRoot.CFrame = savedCFrame
-                    myRoot.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-                end
-            end)
             break
         end
     end
