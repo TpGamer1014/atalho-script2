@@ -177,12 +177,12 @@ local MinCorner = Instance.new("UICorner")
 MinCorner.CornerRadius = UDim.new(0, 6)
 MinCorner.Parent = MinimizeButton
 
--- BOTÃO MINIMIZADO CUSTOMIZADO (AJUSTADO PARA CIMA: Y = 0.35)
+-- BOTÃO MINIMIZADO CUSTOMIZADO (MAIS ALTO: Y = 0.20 E RETO NA BORDA ESQUERDA)
 local OpenButton = Instance.new("TextButton")
 OpenButton.Name = "OpenButton"
 OpenButton.Size = UDim2.new(0, 135, 0, 38)
 OpenButton.AnchorPoint = Vector2.new(0, 0.5)
-OpenButton.Position = UDim2.new(0, 0, 0.35, 0) -- Movido mais para cima
+OpenButton.Position = UDim2.new(0, 0, 0.20, 0) -- Posição bem mais alta
 OpenButton.Text = "☀️  🌸 Paulin"
 OpenButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 OpenButton.TextSize = 15
@@ -194,8 +194,18 @@ OpenButton.Visible = false
 OpenButton.Parent = ScreenGui
 
 local OpenCorner = Instance.new("UICorner")
-OpenCorner.CornerRadius = UDim.new(0, 19)
+OpenCorner.CornerRadius = UDim.new(0, 8)
 OpenCorner.Parent = OpenButton
+
+-- Preenchimento para deixar a borda esquerda totalmente retangular e colada na tela
+local FlatLeftCover = Instance.new("Frame")
+FlatLeftCover.Size = UDim2.new(0, 12, 1, 0)
+FlatLeftCover.Position = UDim2.new(0, 0, 0, 0)
+FlatLeftCover.BackgroundColor3 = Color3.fromRGB(15, 18, 22)
+FlatLeftCover.BackgroundTransparency = 0.05
+FlatLeftCover.BorderSizePixel = 0
+FlatLeftCover.ZIndex = OpenButton.ZIndex
+FlatLeftCover.Parent = OpenButton
 
 local OpenStroke = Instance.new("UIStroke")
 OpenStroke.Thickness = 2.5
