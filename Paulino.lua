@@ -1,5 +1,5 @@
 -- ==========================================
--- PAULINO MM2 - SCRIPT COMPLETO (FIX GRAB GUN INSTANTÂNEO)
+-- PAULINO MM2 - SCRIPT COMPLETO (FIX DEFINITIVO GRAB GUN)
 -- ==========================================
 
 local Players = game:GetService("Players")
@@ -337,7 +337,7 @@ local function getPlayerColorAndRole(p)
 end
 
 -- ==========================================
--- PEGAR ARMA ULTRA RÁPIDO
+-- PEGAR ARMA CORRETO (SALVA A POSIÇÃO ANTES)
 -- ==========================================
 local function grabGunFromFloor()
     local myChar = LocalPlayer.Character
@@ -347,15 +347,16 @@ local function grabGunFromFloor()
     
     for _, obj in ipairs(Workspace:GetDescendants()) do
         if (obj.Name == "GunDrop" or obj.Name:lower():find("gundrop")) and obj:IsA("BasePart") then
+            -- Captura a posição EXATA onde o jogador está no exato momento do clique
             local savedCFrame = myRoot.CFrame
             
             myRoot.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
             myRoot.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
             
-            -- Teleporta na arma
+            -- Teleporta para a arma
             myRoot.CFrame = obj.CFrame + Vector3.new(0, 1, 0)
             
-            -- Retorna instantaneamente no frame seguinte
+            -- Espera um frame físico e retorna imediatamente para a posição salva
             RunService.Heartbeat:Wait()
             myRoot.CFrame = savedCFrame
             myRoot.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
