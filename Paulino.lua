@@ -178,12 +178,12 @@ MinCorner.CornerRadius = UDim.new(0, 6)
 MinCorner.Parent = MinimizeButton
 
 -- ==========================================
--- BOTÃO MINIMIZADO (NO TOPO + RETO NA BORDA)
+-- BOTÃO MINIMIZADO (MAIS PARA BAIXO)
 -- ==========================================
 local OpenButton = Instance.new("TextButton")
 OpenButton.Name = "OpenButton"
 OpenButton.Size = UDim2.new(0, 140, 0, 36)
-OpenButton.Position = UDim2.new(0, 0, 0, 5) -- Subiu totalmente para o topo (Y = 5)
+OpenButton.Position = UDim2.new(0, 0, 0, 200) -- Posição Y alterada para 200 (bem mais para baixo)
 OpenButton.Text = ""
 OpenButton.BackgroundColor3 = Color3.fromRGB(15, 18, 22)
 OpenButton.BackgroundTransparency = 0.05
@@ -196,7 +196,6 @@ local OpenCorner = Instance.new("UICorner")
 OpenCorner.CornerRadius = UDim.new(0, 10)
 OpenCorner.Parent = OpenButton
 
--- Cobridor retangular da borda esquerda (deixa retangular e encostado no monitor)
 local LeftSquareCover = Instance.new("Frame")
 LeftSquareCover.Size = UDim2.new(0, 15, 1, 0)
 LeftSquareCover.Position = UDim2.new(0, 0, 0, 0)
@@ -205,7 +204,6 @@ LeftSquareCover.BorderSizePixel = 0
 LeftSquareCover.ZIndex = 2
 LeftSquareCover.Parent = OpenButton
 
--- Texto por cima
 local OpenText = Instance.new("TextLabel")
 OpenText.Size = UDim2.new(1, 0, 1, 0)
 OpenText.Position = UDim2.new(0, 0, 0, 0)
@@ -217,7 +215,6 @@ OpenText.BackgroundTransparency = 1
 OpenText.ZIndex = 3
 OpenText.Parent = OpenButton
 
--- Borda Neon (UIStroke)
 local OpenStroke = Instance.new("UIStroke")
 OpenStroke.Thickness = 2
 OpenStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
@@ -799,7 +796,6 @@ end)
 -- ABA CÂMERA
 -- ==========================================
 local FreecamLivreBtn = addButton(pages.Camera, "Freecam Livre: DESLIGADO")
-local FreecamPlayerButton = addButton(pages.Camera, "Espectar Jogador")
 local ResetCamButton = addButton(pages.Camera, "Voltar Câmera ao Normal")
 
 local freecamRotX = 0
@@ -823,218 +819,65 @@ FreecamLivreBtn.MouseButton1Click:Connect(function()
             if not freecamActive then return end
             
             if UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton2) then
-                UserInputService.MouseBehavior = Enum.MouseBehavior.LockCurrentPosition
+                UserInputService.MouseBehavior = Enum.MouseBehavior.LockCurrent
                 local delta = UserInputService:GetMouseDelta()
-                local sens = 0.004
-                freecamRotY = freecamRotY - delta.X * sens
-                freecamRotX = math.clamp(freecamRotX - delta.Y * sens, math.rad(-89), math.rad(89))
+                freecamRotX = math.clamp(freecamRotX - delta.Y * 0.003, -math.rad(89), math.rad(89))
+                freecamRotY = freecamRotY - delta.X * 0.003
             else
                 UserInputService.MouseBehavior = Enum.MouseBehavior.Default
             end
             
-            local camRot = CFrame.Angles(0, freecamRotY, 0) * CFrame.Angles(freecamRotX, 0, 0)
-            local speed = UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) and 2 or 0.8
-            local moveDir = Vector3.new()
+            local moveDir = Vector3.zero
+            if UserInputService:IsKeyDown(Enum.KeyCode.W) then moveDir = moveDir + Vector3.new(0, 0, -1) end
+            if UserInputService:IsKeyDown(Enum.KeyCode.S) then moveDir = moveDir + Vector3.new(0, 0, 1) end
+            if UserInputService:IsKeyDown(Enum.KeyCode.A) then moveDir = moveDir + Vector3.new(-1, 0, 0) end
+            if UserInputService:IsKeyDown(Enum.KeyCode.D) then moveDir = moveDir + Vector3.new(1, 0, 0) end
             
-            if UserInputService:IsKeyDown(Enum.KeyCode.W) then moveDir = moveDir + camRot.LookVector end
-            if UserInputService:IsKeyDown(Enum.KeyCode.S) then moveDir = moveDir - camRot.LookVector end
-            if UserInputService:IsKeyDown(Enum.KeyCode.A) then moveDir = moveDir - camRot.RightVector end
-            if UserInputService:IsKeyDown(Enum.KeyCode.D) then moveDir = moveDir + camRot.RightVector end
-            if UserInputService:IsKeyDown(Enum.KeyCode.E) then moveDir = moveDir + Vector3.new(0, 1, 0) end
-            if UserInputService:IsKeyDown(Enum.KeyCode.Q) then moveDir = moveDir - Vector3.new(0, 1, 0) end
-            
-            Camera.CFrame = CFrame.new(Camera.CFrame.Position + (moveDir * speed)) * camRot
+            local rotCF = CFrame.fromOrientation(freecamRotX, freecamRotY, 0)
+            Camera.CFrame = Camera.CFrame + (rotCF * moveDir * 1.5)
+            Camera.CFrame = CFrame.new(Camera.CFrame.Position) * rotCF
         end)
     else
-        if freecamConn then freecamConn:Disconnect() freecamConn = nil end
+        if freecamConn then freecamConn:Disconnect() end
+        Camera.CameraType = Enum.CameraType.Custom
         UserInputService.MouseBehavior = Enum.MouseBehavior.Default
-        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
-            Camera.CameraType = Enum.CameraType.Custom
-            Camera.CameraSubject = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-        end
-    end
-end)
-
-local CameraListFrame = Instance.new("ScrollingFrame")
-CameraListFrame.Size = UDim2.new(0, 180, 0, 180)
-CameraListFrame.Position = UDim2.new(1, 10, 0, 60)
-CameraListFrame.BackgroundColor3 = Color3.fromRGB(245, 245, 250)
-CameraListFrame.BackgroundTransparency = 0.2
-CameraListFrame.BorderSizePixel = 0
-CameraListFrame.Visible = false
-CameraListFrame.Parent = MainFrame
-
-local CamListLayout = Instance.new("UIListLayout")
-CamListLayout.Parent = CameraListFrame
-
-FreecamPlayerButton.MouseButton1Click:Connect(function()
-    CameraListFrame.Visible = not CameraListFrame.Visible
-    if CameraListFrame.Visible then
-        for _, child in ipairs(CameraListFrame:GetChildren()) do if child:IsA("TextButton") then child:Destroy() end end
-        for _, p in ipairs(Players:GetPlayers()) do
-            if p ~= LocalPlayer then
-                local color, role = getPlayerColorAndRole(p)
-                local btn = Instance.new("TextButton")
-                btn.Size = UDim2.new(1, 0, 0, 30)
-                btn.Text = " 👁️ " .. p.Name
-                btn.TextColor3 = color
-                btn.TextSize = 11
-                btn.Font = Enum.Font.GothamBold
-                btn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-                btn.BorderSizePixel = 0
-                btn.Parent = CameraListFrame
-                
-                btn.MouseButton1Click:Connect(function()
-                    if freecamActive then
-                        freecamActive = false
-                        FreecamLivreBtn.Text = "Freecam Livre: DESLIGADO"
-                        FreecamLivreBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-                        FreecamLivreBtn.TextColor3 = Color3.fromRGB(25, 25, 35)
-                        if freecamConn then freecamConn:Disconnect() freecamConn = nil end
-                        UserInputService.MouseBehavior = Enum.MouseBehavior.Default
-                    end
-                    if p.Character and p.Character:FindFirstChildOfClass("Humanoid") then
-                        Camera.CameraType = Enum.CameraType.Custom
-                        Camera.CameraSubject = p.Character:FindFirstChildOfClass("Humanoid")
-                        FreecamPlayerButton.Text = "Espectando: " .. p.Name
-                        FreecamPlayerButton.BackgroundColor3 = Color3.fromRGB(40, 180, 90)
-                        FreecamPlayerButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-                    end
-                    CameraListFrame.Visible = false
-                end)
-            end
-        end
     end
 end)
 
 ResetCamButton.MouseButton1Click:Connect(function()
-    if freecamActive then
-        freecamActive = false
-        FreecamLivreBtn.Text = "Freecam Livre: DESLIGADO"
-        FreecamLivreBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-        FreecamLivreBtn.TextColor3 = Color3.fromRGB(25, 25, 35)
-        if freecamConn then freecamConn:Disconnect() freecamConn = nil end
-        UserInputService.MouseBehavior = Enum.MouseBehavior.Default
-    end
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
-        Camera.CameraType = Enum.CameraType.Custom
-        Camera.CameraSubject = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-        FreecamPlayerButton.Text = "Espectar Jogador"
-        FreecamPlayerButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-        FreecamPlayerButton.TextColor3 = Color3.fromRGB(25, 25, 35)
-    end
+    freecamActive = false
+    FreecamLivreBtn.Text = "Freecam Livre: DESLIGADO"
+    FreecamLivreBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    FreecamLivreBtn.TextColor3 = Color3.fromRGB(25, 25, 35)
+    if freecamConn then freecamConn:Disconnect() end
+    Camera.CameraType = Enum.CameraType.Custom
+    UserInputService.MouseBehavior = Enum.MouseBehavior.Default
 end)
 
 -- ==========================================
 -- ABA TROLL
 -- ==========================================
-local KillMurderBtn = addButton(pages.Troll, "⚔️ Matar Murderer (Fling)")
-local KillSheriffBtn = addButton(pages.Troll, "🛡️ Matar Sheriff (Fling)")
-local SelectFlingBtn = addButton(pages.Troll, "🌀 Fling em Jogador Específico")
-
-local function performFling(targetP, duration)
-    if not targetP or not targetP.Character then return end
-    local myChar = LocalPlayer.Character
-    local myHrp = myChar and myChar:FindFirstChild("HumanoidRootPart")
-    local myHum = myChar and myChar:FindFirstChildOfClass("Humanoid")
-    local targetHrp = targetP.Character:FindFirstChild("HumanoidRootPart")
-    
-    if not myHrp or not targetHrp then return end
-    
-    aFazerFling = true
-    local savedCFrame = myHrp.CFrame
-    
-    local bV = Instance.new("BodyVelocity")
-    bV.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-    bV.Velocity = Vector3.new(0, 0, 0)
-    bV.Parent = myHrp
-    
-    local bAV = Instance.new("BodyAngularVelocity")
-    bAV.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
-    bAV.AngularVelocity = Vector3.new(0, 99999, 0)
-    bAV.Parent = myHrp
-    
-    local startTime = tick()
-    while (tick() - startTime) < (duration or 1.0) and targetHrp and targetHrp.Parent do
-        myHrp.CFrame = targetHrp.CFrame
-        RunService.Heartbeat:Wait()
-    end
-    
-    bV:Destroy()
-    bAV:Destroy()
-    
-    myHrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-    myHrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
-    if myHum then myHum.Sit = false end
-    
-    task.wait(0.05)
-    myHrp.CFrame = savedCFrame
-    task.wait(0.05)
-    myHrp.CFrame = savedCFrame
-    myHrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-    myHrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
-    
-    aFazerFling = false
-end
-
-local function ativarFlingTemporario(btn, textoOriginal, getAlvoFunc)
-    if btn.BackgroundColor3 == Color3.fromRGB(40, 180, 90) then return end
-    btn.Text = textoOriginal .. ": ATIVO..."
-    btn.BackgroundColor3 = Color3.fromRGB(40, 180, 90)
-    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+local FlingBtn = addButton(pages.Troll, "Fling All Players: DESLIGADO")
+FlingBtn.MouseButton1Click:Connect(function()
+    aFazerFling = not aFazerFling
+    FlingBtn.Text = aFazerFling and "Fling All Players: LIGADO" or "Fling All Players: DESLIGADO"
+    FlingBtn.BackgroundColor3 = aFazerFling and Color3.fromRGB(40, 180, 90) or Color3.fromRGB(255, 255, 255)
+    FlingBtn.TextColor3 = aFazerFling and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(25, 25, 35)
     
     task.spawn(function()
-        performFling(getAlvoFunc(), 1.0)
-        btn.Text = textoOriginal
-        btn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-        btn.TextColor3 = Color3.fromRGB(25, 25, 35)
-    end)
-end
-
-KillMurderBtn.MouseButton1Click:Connect(function()
-    ativarFlingTemporario(KillMurderBtn, "⚔️ Matar Murderer (Fling)", getMurderer)
-end)
-
-KillSheriffBtn.MouseButton1Click:Connect(function()
-    ativarFlingTemporario(KillSheriffBtn, "🛡️ Matar Sheriff (Fling)", getSheriff)
-end)
-
-local FlingListFrame = Instance.new("ScrollingFrame")
-FlingListFrame.Size = UDim2.new(0, 180, 0, 180)
-FlingListFrame.Position = UDim2.new(1, 10, 0, 100)
-FlingListFrame.BackgroundColor3 = Color3.fromRGB(245, 245, 250)
-FlingListFrame.BackgroundTransparency = 0.2
-FlingListFrame.BorderSizePixel = 0
-FlingListFrame.Visible = false
-FlingListFrame.Parent = MainFrame
-
-local FlingListLayout = Instance.new("UIListLayout")
-FlingListLayout.Parent = FlingListFrame
-
-SelectFlingBtn.MouseButton1Click:Connect(function()
-    FlingListFrame.Visible = not FlingListFrame.Visible
-    if FlingListFrame.Visible then
-        for _, child in ipairs(FlingListFrame:GetChildren()) do if child:IsA("TextButton") then child:Destroy() end end
-        for _, p in ipairs(Players:GetPlayers()) do
-            if p ~= LocalPlayer then
-                local color, role = getPlayerColorAndRole(p)
-                local btn = Instance.new("TextButton")
-                btn.Size = UDim2.new(1, 0, 0, 30)
-                btn.Text = " 💥 " .. p.Name .. " " .. role
-                btn.TextColor3 = color
-                btn.TextSize = 11
-                btn.Font = Enum.Font.GothamBold
-                btn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-                btn.BorderSizePixel = 0
-                btn.Parent = FlingListFrame
-                
-                btn.MouseButton1Click:Connect(function()
-                    FlingListFrame.Visible = false
-                    task.spawn(function()
-                        performFling(p, 1.0)
-                    end)
-                end)
+        while aFazerFling and _G.PaulinoMenuRunning do
+            local myRoot = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if myRoot then
+                for _, p in ipairs(Players:GetPlayers()) do
+                    if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+                        local targetRoot = p.Character.HumanoidRootPart
+                        myRoot.CFrame = targetRoot.CFrame
+                        myRoot.AssemblyLinearVelocity = Vector3.new(99999, 99999, 99999)
+                        task.wait(0.05)
+                    end
+                end
             end
+            task.wait(0.1)
         end
-    end
+    end)
 end)
