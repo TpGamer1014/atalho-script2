@@ -573,9 +573,9 @@ end
 
 local function getPlayerColorAndRole(p)
     local tool = getPlayerTool(p)
-    if tool == "Knife" or p == getMurderer() then return Color3.fromRGB(255, 60, 60), "🔪 [Murderer]" end
+    if tool == "Knife" or p == getMurderer() then return Color3.fromRGB(255, 60, 60), "🔪 [Murder]" end
     if tool == "Gun" or p == getSheriff() then return Color3.fromRGB(60, 160, 255), "🔫 [Sheriff]" end
-    return Color3.fromRGB(60, 220, 100), " innocent [Inocente]"
+    return Color3.fromRGB(60, 220, 100), "2x inocente"
 end
 
 -- ==========================================
