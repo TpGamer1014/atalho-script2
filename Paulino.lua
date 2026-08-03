@@ -178,14 +178,14 @@ MinCorner.CornerRadius = UDim.new(0, 6)
 MinCorner.Parent = MinimizeButton
 
 -- ==========================================
--- BOTÃO MINIMIZADO (MAIS PARA BAIXO)
+-- BOTÃO MINIMIZADO (BRANCO + BAIXO)
 -- ==========================================
 local OpenButton = Instance.new("TextButton")
 OpenButton.Name = "OpenButton"
 OpenButton.Size = UDim2.new(0, 140, 0, 36)
-OpenButton.Position = UDim2.new(0, 0, 0, 200) -- Posição Y alterada para 200 (bem mais para baixo)
+OpenButton.Position = UDim2.new(0, 0, 0, 200)
 OpenButton.Text = ""
-OpenButton.BackgroundColor3 = Color3.fromRGB(15, 18, 22)
+OpenButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 OpenButton.BackgroundTransparency = 0.05
 OpenButton.BorderSizePixel = 0
 OpenButton.Visible = false
@@ -199,7 +199,7 @@ OpenCorner.Parent = OpenButton
 local LeftSquareCover = Instance.new("Frame")
 LeftSquareCover.Size = UDim2.new(0, 15, 1, 0)
 LeftSquareCover.Position = UDim2.new(0, 0, 0, 0)
-LeftSquareCover.BackgroundColor3 = Color3.fromRGB(15, 18, 22)
+LeftSquareCover.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 LeftSquareCover.BorderSizePixel = 0
 LeftSquareCover.ZIndex = 2
 LeftSquareCover.Parent = OpenButton
@@ -208,7 +208,7 @@ local OpenText = Instance.new("TextLabel")
 OpenText.Size = UDim2.new(1, 0, 1, 0)
 OpenText.Position = UDim2.new(0, 0, 0, 0)
 OpenText.Text = "☀️  🌸 Paulin"
-OpenText.TextColor3 = Color3.fromRGB(255, 255, 255)
+OpenText.TextColor3 = Color3.fromRGB(20, 20, 30)
 OpenText.TextSize = 14
 OpenText.Font = Enum.Font.GothamBold
 OpenText.BackgroundTransparency = 1
