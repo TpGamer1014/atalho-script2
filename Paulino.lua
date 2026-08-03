@@ -1,5 +1,5 @@
 -- ==========================================
--- PAULINO MM2 - SCRIPT COMPLETO (TEMA BRANCO GLASS)
+-- PAULINO MM2 - SCRIPT COMPLETO (ESP CORRIGIDO)
 -- ==========================================
 
 local Players = game:GetService("Players")
@@ -24,6 +24,21 @@ local aFazerFling = false
 local noclipConnection = nil
 local antiFlingConnection = nil
 local freecamConn = nil
+
+-- ==========================================
+-- VERIFICAÇÕES DE ROUND E VIDA
+-- ==========================================
+local function isLocalAlive()
+    local char = LocalPlayer.Character
+    local hum = char and char:FindFirstChildOfClass("Humanoid")
+    return hum and hum.Health > 0
+end
+
+local function isRoundActive()
+    local map = Workspace:FindFirstChild("Normal") or Workspace:FindFirstChild("Map")
+    local coinContainer = Workspace:FindFirstChild("CoinContainer", true)
+    return (map ~= nil or coinContainer ~= nil)
+end
 
 -- ==========================================
 -- ANTI-FLING PASSIVO
@@ -66,7 +81,6 @@ ScreenGui.ResetOnSpawn = false
 ScreenGui.Enabled = true
 ScreenGui.Parent = parentContainer
 
--- Painel Principal Branco Translucido
 local MainFrame = Instance.new("Frame")
 MainFrame.Size = UDim2.new(0, 520, 0, 360)
 MainFrame.Position = UDim2.new(0.5, -260, 0.5, -180)
@@ -85,7 +99,6 @@ MainStroke.Transparency = 0.3
 MainStroke.Thickness = 1.5
 MainStroke.Parent = MainFrame
 
--- Barra Superior
 local TopBar = Instance.new("Frame")
 TopBar.Size = UDim2.new(1, 0, 0, 35)
 TopBar.BackgroundColor3 = Color3.fromRGB(230, 230, 240)
@@ -322,7 +335,7 @@ CloseBtn.MouseButton1Click:Connect(function()
 end)
 
 -- ==========================================
--- ROLES
+-- ROLES COM COR VERDE PARA INOCENTES
 -- ==========================================
 local function getPlayerTool(p)
     if not p then return nil end
@@ -354,7 +367,7 @@ local function getPlayerColorAndRole(p)
     local tool = getPlayerTool(p)
     if tool == "Knife" or p == getMurderer() then return Color3.fromRGB(220, 40, 40), "[Murderer]" end
     if tool == "Gun" or p == getSheriff() then return Color3.fromRGB(20, 120, 220), "[Sheriff]" end
-    return Color3.fromRGB(50, 50, 60), "[Inocente]"
+    return Color3.fromRGB(50, 255, 50), "[Inocente]" -- Verde Brilhante para Inocentes
 end
 
 -- ==========================================
@@ -513,7 +526,7 @@ task.spawn(function()
 end)
 
 -- ==========================================
--- ABA VISUAL / ESP
+-- ABA VISUAL / ESP (SOMENTE EM ROUND E VIVO)
 -- ==========================================
 local EspButton = addButton(pages.Visuals, "ESP Roles: DESLIGADO")
 
@@ -546,7 +559,7 @@ end)
 
 task.spawn(function()
     while ScreenGui.Parent do
-        if espActive then
+        if espActive and isLocalAlive() and isRoundActive() then
             for _, p in ipairs(Players:GetPlayers()) do
                 if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
                     local color, role = getPlayerColorAndRole(p)
@@ -605,6 +618,8 @@ task.spawn(function()
                     lbl.Text = "[Arma Droppada]"
                 end
             end
+        else
+            clearESP()
         end
         task.wait(0.4)
     end
