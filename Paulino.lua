@@ -15,6 +15,7 @@ local Camera = Workspace.CurrentCamera
 _G.PaulinoMenuRunning = true
 
 local farmAtivo = false
+local lobbyFarmAtivo = false
 local espActive = false
 local aimbotActive = false
 local freecamActive = false
@@ -22,9 +23,6 @@ local freecamActive = false
 local noclipConnection = nil
 local antiFlingConnection = nil
 local freecamConn = nil
-
-local trollSheriffConnection = nil
-local trollMurderConnection = nil
 
 -- ==========================================
 -- ANTI-FLING PASSIVO
@@ -219,7 +217,7 @@ local function createTabButton(name, displayName, default)
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(1, -10, 0, 32)
     btn.Position = UDim2.new(0, 5, 0, 0)
-    btn.Text = "  " .. displayName
+    btn.Text = "   " .. displayName
     btn.TextColor3 = default and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(160, 160, 170)
     btn.TextSize = 12
     btn.Font = Enum.Font.GothamMedium
@@ -294,6 +292,7 @@ local CloseBtn = addButton(pages.Home, "Parar Tudo / Fechar Hub")
 CloseBtn.MouseButton1Click:Connect(function()
     _G.PaulinoMenuRunning = false
     farmAtivo = false
+    lobbyFarmAtivo = false
     espActive = false
     if antiFlingConnection then antiFlingConnection:Disconnect() end
     if ScreenGui then ScreenGui:Destroy() end
@@ -336,7 +335,7 @@ local function getPlayerColorAndRole(p)
 end
 
 -- ==========================================
--- PEGAR ARMA (ULTRA BLINDADO - SALVA POSIÇÃO REAL)
+-- PEGAR ARMA
 -- ==========================================
 local function grabGunFromFloor()
     local myChar = LocalPlayer.Character
@@ -346,25 +345,18 @@ local function grabGunFromFloor()
     
     for _, obj in ipairs(Workspace:GetDescendants()) do
         if (obj.Name == "GunDrop" or obj.Name:lower():find("gundrop")) and obj:IsA("BasePart") then
-            -- Salva a posição exata atual antes de qualquer movimento
             local savedCFrame = myRoot.CFrame
             
-            -- Congela velocidades para evitar trancos na física do jogo
             myRoot.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
             myRoot.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
             
-            -- Teleporta suavemente para cima da arma
             myRoot.CFrame = obj.CFrame + Vector3.new(0, 3, 0)
-            
-            -- Aguarda o tempo estrito do servidor registrar a coleta
             task.wait(0.2)
             
-            -- Força o retorno imediato à posição salva anteriormente
             myRoot.CFrame = savedCFrame
             myRoot.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
             myRoot.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
             
-            -- Trava secundária de segurança caso o jogo altere o CFrame após o retorno
             task.delay(0.05, function()
                 if myRoot and (myRoot.Position - savedCFrame.Position).Magnitude > 5 then
                     myRoot.CFrame = savedCFrame
@@ -377,7 +369,7 @@ local function grabGunFromFloor()
 end
 
 -- ==========================================
--- ABA COMBATE (AIMBOT NORMAL)
+-- ABA COMBATE
 -- ==========================================
 local AimbotButton = addButton(pages.Combat, "Aimbot (E): DESLIGADO")
 local GrabGunButton = addButton(pages.Combat, "Pegar Arma do Chão (G)")
@@ -469,9 +461,10 @@ SelectPlayerButton.MouseButton1Click:Connect(function()
 end)
 
 -- ==========================================
--- ABA AUTO FARM
+-- ABA AUTO FARM & LOBBY FARM
 -- ==========================================
 local AutoFarmButton = addButton(pages.Farm, "Auto Farm: DESLIGADO")
+local AutoLobbyBtn = addButton(pages.Farm, "Auto Lobby Farm: DESLIGADO")
 
 local function toggleNoclip(state)
     if state then
@@ -493,8 +486,28 @@ AutoFarmButton.MouseButton1Click:Connect(function()
     if not farmAtivo then toggleNoclip(false) end
 end)
 
+AutoLobbyBtn.MouseButton1Click:Connect(function()
+    lobbyFarmAtivo = not lobbyFarmAtivo
+    AutoLobbyBtn.Text = lobbyFarmAtivo and "Auto Lobby Farm: LIGADO" or "Auto Lobby Farm: DESLIGADO"
+    AutoLobbyBtn.BackgroundColor3 = lobbyFarmAtivo and Color3.fromRGB(50, 160, 80) or Color3.fromRGB(35, 35, 42)
+end)
+
+task.spawn(function()
+    while ScreenGui.Parent do
+        if lobbyFarmAtivo then
+            local myChar = LocalPlayer.Character
+            local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
+            if myRoot then
+                myRoot.CFrame = CFrame.new(0, 150, 0)
+                myRoot.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+            end
+        end
+        task.wait(1)
+    end
+end)
+
 -- ==========================================
--- ABA VISUAL / ESP (APENAS CONTORNO)
+-- ABA VISUAL / ESP
 -- ==========================================
 local EspButton = addButton(pages.Visuals, "ESP Roles: DESLIGADO")
 
@@ -720,8 +733,6 @@ end)
 -- ==========================================
 local KillMurderBtn = addButton(pages.Troll, "⚔️ Matar Murderer (Fling)")
 local KillSheriffBtn = addButton(pages.Troll, "🛡️ Matar Sheriff (Fling)")
-local TrollSheriffBtn = addButton(pages.Troll, "Paralisar Sheriff: DESLIGADO")
-local TrollMurderBtn = addButton(pages.Troll, "Paralisar Murderer: DESLIGADO")
 
 local function performFling(targetP, duration)
     if not targetP or not targetP.Character then return end
@@ -769,56 +780,4 @@ end)
 
 KillSheriffBtn.MouseButton1Click:Connect(function()
     ativarFlingTemporario(KillSheriffBtn, "🛡️ Matar Sheriff (Fling)", getSheriff)
-end)
-
-local function freezeTargetReal(p)
-    if p and p.Character then
-        local hrp = p.Character:FindFirstChild("HumanoidRootPart")
-        local hum = p.Character:FindFirstChildOfClass("Humanoid")
-        
-        if hrp then
-            if not p.Character:FindFirstChild("FrozenPos") then
-                local posVal = Instance.new("CFrameValue")
-                posVal.Name = "FrozenPos"
-                posVal.Value = hrp.CFrame
-                posVal.Parent = p.Character
-            end
-            
-            local targetPos = p.Character.FrozenPos.Value
-            hrp.CFrame = targetPos
-            hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-            hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
-        end
-        
-        if hum then
-            hum.WalkSpeed = 0
-            hum.JumpPower = 0
-        end
-    end
-end
-
-TrollSheriffBtn.MouseButton1Click:Connect(function()
-    local active = TrollSheriffBtn.Text:find("DESLIGADO")
-    TrollSheriffBtn.Text = active and "Paralisar Sheriff: LIGADO" or "Paralisar Sheriff: DESLIGADO"
-    TrollSheriffBtn.BackgroundColor3 = active and Color3.fromRGB(50, 160, 80) or Color3.fromRGB(35, 35, 42)
-    if active then
-        trollSheriffConnection = RunService.RenderStepped:Connect(function() freezeTargetReal(getSheriff()) end)
-    else
-        if trollSheriffConnection then trollSheriffConnection:Disconnect() end
-        local s = getSheriff()
-        if s and s.Character and s.Character:FindFirstChild("FrozenPos") then s.Character.FrozenPos:Destroy() end
-    end
-end)
-
-TrollMurderBtn.MouseButton1Click:Connect(function()
-    local active = TrollMurderBtn.Text:find("DESLIGADO")
-    TrollMurderBtn.Text = active and "Paralisar Murderer: LIGADO" or "Paralisar Murderer: DESLIGADO"
-    TrollMurderBtn.BackgroundColor3 = active and Color3.fromRGB(50, 160, 80) or Color3.fromRGB(35, 35, 42)
-    if active then
-        trollMurderConnection = RunService.RenderStepped:Connect(function() freezeTargetReal(getMurderer()) end)
-    else
-        if trollMurderConnection then trollMurderConnection:Disconnect() end
-        local m = getMurderer()
-        if m and m.Character and m.Character:FindFirstChild("FrozenPos") then m.Character.FrozenPos:Destroy() end
-    end
 end)
