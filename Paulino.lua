@@ -482,7 +482,7 @@ local function getPlayerColorAndRole(p)
 end
 
 -- ==========================================
--- PEGAR ARMA (CORRIGIDO E OTIMIZADO)
+-- PEGAR ARMA (CORRIGIDO DEFINITIVAMENTE)
 -- ==========================================
 local function grabGunFromFloor()
     local myChar = LocalPlayer.Character
@@ -492,15 +492,21 @@ local function grabGunFromFloor()
     
     for _, obj in ipairs(Workspace:GetDescendants()) do
         if (obj.Name == "GunDrop" or obj.Name:lower():find("gundrop")) and obj:IsA("BasePart") then
+            -- Guarda a posição exata ANTES de qualquer alteração
+            local savedCFrame = myRoot.CFrame
+            
+            -- Zera a velocidade para não seres lançado
             myRoot.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
             myRoot.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
             
-            local savedCFrame = myRoot.CFrame
-            
+            -- Teleporta para a arma
             myRoot.CFrame = obj.CFrame + Vector3.new(0, 3, 0)
             
-            task.wait(0.05)
+            -- Aguarda exatos 2 frames do jogo para garantir o registo da colisão
+            RunService.Heartbeat:Wait()
+            RunService.Heartbeat:Wait()
             
+            -- Zera novamente e volta para a posição inicial guardada
             myRoot.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
             myRoot.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
             myRoot.CFrame = savedCFrame
@@ -562,7 +568,7 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
 end)
 
 -- ==========================================
--- FUNÇÃO AUXILIAR: CRIAR LISTA CINEMATOGRÁFICA (BLUR + CANTOS REDONDOS + ESCURO)
+-- FUNÇÃO AUXILIAR: CRIAR LISTA CINEMATOGRÁFICA
 -- ==========================================
 local function createCinematicList()
     local container = Instance.new("Frame")
