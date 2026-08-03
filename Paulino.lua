@@ -1,5 +1,5 @@
 -- ==========================================
--- PAULINO MM2 - SCRIPT COMPLETO (FINAL)
+-- PAULINO MM2 - SCRIPT COMPLETO (FINAL CORRIGIDO)
 -- ==========================================
 
 local Players = game:GetService("Players")
@@ -12,7 +12,6 @@ local VirtualUser = game:GetService("VirtualUser")
 local LocalPlayer = Players.LocalPlayer
 local Camera = Workspace.CurrentCamera
 
--- Limpa versões antigas antes de carregar
 local function cleanOldGui()
     local target = gethui and gethui() or (pcall(function() return CoreGui end) and CoreGui) or LocalPlayer:FindFirstChildOfClass("PlayerGui")
     if target and target:FindFirstChild("PaulinoGUI") then
@@ -31,7 +30,6 @@ local freecamActive = false
 local aFazerFling = false
 local antiAfkAtivo = false
 
--- Variáveis de Velocidade e Pulo
 local customSpeed = 16
 local customJump = 50
 local speedActive = false
@@ -40,9 +38,6 @@ local jumpActive = false
 local antiFlingConnection = nil
 local freecamConn = nil
 
--- ==========================================
--- ANTI-AFK LOGIC
--- ==========================================
 LocalPlayer.Idled:Connect(function()
     if antiAfkAtivo then
         VirtualUser:CaptureController()
@@ -50,9 +45,6 @@ LocalPlayer.Idled:Connect(function()
     end
 end)
 
--- ==========================================
--- LOOP DE VELOCIDADE E PULO (0 A 100)
--- ==========================================
 RunService.Stepped:Connect(function()
     if not _G.PaulinoMenuRunning then return end
     local char = LocalPlayer.Character
@@ -68,9 +60,6 @@ RunService.Stepped:Connect(function()
     end
 end)
 
--- ==========================================
--- VERIFICAÇÕES DE ROUND E VIDA
--- ==========================================
 local function isLocalAlive()
     local char = LocalPlayer.Character
     local hum = char and char:FindFirstChildOfClass("Humanoid")
@@ -83,9 +72,6 @@ local function isRoundActive()
     return (map ~= nil or coinContainer ~= nil)
 end
 
--- ==========================================
--- ANTI-FLING PASSIVO
--- ==========================================
 local function iniciarAntiFling()
     if antiFlingConnection then antiFlingConnection:Disconnect() end
     antiFlingConnection = RunService.Stepped:Connect(function()
@@ -103,9 +89,6 @@ local function iniciarAntiFling()
 end
 pcall(iniciarAntiFling)
 
--- ==========================================
--- CRIAÇÃO DA GUI
--- ==========================================
 local function getGuiContainer()
     if gethui then return gethui() end
     local success, coreGui = pcall(function() return CoreGui end)
@@ -178,7 +161,7 @@ MinCorner.CornerRadius = UDim.new(0, 6)
 MinCorner.Parent = MinimizeButton
 
 -- ==========================================
--- BOTÃO MINIMIZADO (BRANCO + BAIXO)
+-- BOTÃO MINIMIZADO (TOTALMENTE BRANCO)
 -- ==========================================
 local OpenButton = Instance.new("TextButton")
 OpenButton.Name = "OpenButton"
@@ -186,7 +169,7 @@ OpenButton.Size = UDim2.new(0, 140, 0, 36)
 OpenButton.Position = UDim2.new(0, 0, 0, 200)
 OpenButton.Text = ""
 OpenButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-OpenButton.BackgroundTransparency = 0.05
+OpenButton.BackgroundTransparency = 0
 OpenButton.BorderSizePixel = 0
 OpenButton.Visible = false
 OpenButton.ClipsDescendants = true
@@ -217,15 +200,9 @@ OpenText.Parent = OpenButton
 
 local OpenStroke = Instance.new("UIStroke")
 OpenStroke.Thickness = 2
+OpenStroke.Color = Color3.fromRGB(255, 255, 255)
 OpenStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 OpenStroke.Parent = OpenButton
-
-local OpenGradient = Instance.new("UIGradient")
-OpenGradient.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 220, 0)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 255, 160))
-})
-OpenGradient.Parent = OpenStroke
 
 local minimized = false
 MinimizeButton.MouseButton1Click:Connect(function()
@@ -262,7 +239,6 @@ UserInputService.InputEnded:Connect(function(input)
     end
 end)
 
--- Sidebar & Páginas
 local Sidebar = Instance.new("ScrollingFrame")
 Sidebar.Size = UDim2.new(0, 140, 1, -35)
 Sidebar.Position = UDim2.new(0, 0, 0, 35)
@@ -461,9 +437,6 @@ CloseBtn.MouseButton1Click:Connect(function()
     if ScreenGui then ScreenGui:Destroy() end
 end)
 
--- ==========================================
--- ROLES
--- ==========================================
 local function getPlayerTool(p)
     if not p then return nil end
     local items = {}
@@ -497,9 +470,6 @@ local function getPlayerColorAndRole(p)
     return Color3.fromRGB(50, 255, 50), "[Inocente]"
 end
 
--- ==========================================
--- PEGAR ARMA
--- ==========================================
 local function grabGunFromFloor()
     task.spawn(function()
         local myChar = LocalPlayer.Character
@@ -527,9 +497,6 @@ local function grabGunFromFloor()
     end)
 end
 
--- ==========================================
--- ABA COMBATE & MOVIMENTO
--- ==========================================
 local SpeedToggleBtn = addButton(pages.Combat, "Alterar Velocidade: DESLIGADO")
 addNumberInput(pages.Combat, "Velocidade (0-100):", 16, function(val)
     customSpeed = val
@@ -655,9 +622,6 @@ SelectPlayerButton.MouseButton1Click:Connect(function()
     end
 end)
 
--- ==========================================
--- ABA AUTO FARM
--- ==========================================
 local AutoLobbyBtn = addButton(pages.Farm, "Auto Lobby Farm: DESLIGADO")
 local FarmXpBtn = addButton(pages.Farm, "FarmXP (Lobby All Rounds): DESLIGADO")
 
@@ -689,9 +653,6 @@ task.spawn(function()
     end
 end)
 
--- ==========================================
--- ABA VISUAL / ESP
--- ==========================================
 local EspButton = addButton(pages.Visuals, "ESP Roles: DESLIGADO")
 
 local function clearESP()
@@ -792,9 +753,6 @@ task.spawn(function()
     end
 end)
 
--- ==========================================
--- ABA CÂMERA
--- ==========================================
 local FreecamLivreBtn = addButton(pages.Camera, "Freecam Livre: DESLIGADO")
 local ResetCamButton = addButton(pages.Camera, "Voltar Câmera ao Normal")
 
@@ -854,9 +812,6 @@ ResetCamButton.MouseButton1Click:Connect(function()
     UserInputService.MouseBehavior = Enum.MouseBehavior.Default
 end)
 
--- ==========================================
--- ABA TROLL
--- ==========================================
 local FlingBtn = addButton(pages.Troll, "Fling All Players: DESLIGADO")
 FlingBtn.MouseButton1Click:Connect(function()
     aFazerFling = not aFazerFling
