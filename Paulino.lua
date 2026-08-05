@@ -23,7 +23,11 @@ local aimbotActive = false
 local freecamActive = false
 local antiAfkAtivo = false
 local fpsBoostAtivo = false
-local noclipActive = false -- Nova variável de estado
+local noclipActive = false
+local flyActive = false
+local flySpeed = 50
+local flyBodyVelocity = nil
+local flyBodyGyro = nil
 
 local xpFarmConnection = nil
 local safePlatform = nil
@@ -33,7 +37,8 @@ local trollSheriffConnection = nil
 local trollMurderConnection = nil
 local antiAfkConnection = nil
 local speedJumpConnection = nil
-local noclipConnection = nil -- Nova conexão
+local noclipConnection = nil
+local flyConnection = nil
 
 -- ==========================================
 -- 🛡️ ANTI-FLING PASSIVO
@@ -314,7 +319,7 @@ local function createPage(name)
     page.Size = UDim2.new(1, 0, 1, 0)
     page.BackgroundTransparency = 1
     page.BorderSizePixel = 0
-    page.CanvasSize = UDim2.new(0, 0, 0, 580)
+    page.CanvasSize = UDim2.new(0, 0, 0, 620)
     page.ScrollBarThickness = 4
     page.Visible = false
     page.Parent = ContentContainer
@@ -459,15 +464,24 @@ CloseBtn.MouseButton1Click:Connect(function()
     xpFarmAtivo = false
     espActive = false
     antiAfkAtivo = false
-    noclipActive = false -- Desliga noclip ao fechar
+    noclipActive = false
+    
+    if flyActive then
+        flyActive = false
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+            LocalPlayer.Character:FindFirstChildOfClass("Humanoid").PlatformStand = false
+        end
+        if flyBodyVelocity then flyBodyVelocity:Destroy() end
+        if flyBodyGyro then flyBodyGyro:Destroy() end
+    end
     
     if xpFarmConnection then xpFarmConnection:Disconnect() end
     if antiFlingConnection then antiFlingConnection:Disconnect() end
     if antiAfkConnection then antiAfkConnection:Disconnect() end
     if speedJumpConnection then speedJumpConnection:Disconnect() end
-    if noclipConnection then noclipConnection:Disconnect() end -- Disconecta conexão noclip
+    if noclipConnection then noclipConnection:Disconnect() end
+    if flyConnection then flyConnection:Disconnect() end
 
-    -- Força CanCollide=true nas partes do personagem para não cair infinitamente ao fechar
     if LocalPlayer.Character then
         for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
             if part:IsA("BasePart") then
@@ -618,14 +632,13 @@ local function grabGunFromFloor()
 end
 
 -- ==========================================
--- ⚔️ ABA COMBATE / VELOCIDADE & PULO
+-- ⚔️ ABA COMBATE / VELOCIDADE & PULO & VOO
 -- ==========================================
 local AimbotButton = addButton(pages.Combat, "🎯 Aimbot (Tecla E): ❌ DESLIGADO")
 local GrabGunButton = addButton(pages.Combat, "🔫 Pegar Arma do Chão (Tecla G)")
 local TpNearestButton = addButton(pages.Combat, "⚡ Teleportar Próximo (Tecla R)")
 local SelectPlayerButton = addButton(pages.Combat, "👥 Selecionar Jogador para TP ➔")
 
--- Novo botão Noclip estiloso
 local NoclipButton = addButton(pages.Combat, "👻 Noclip (Atravessar Paredes): ❌ DESLIGADO")
 
 NoclipButton.MouseButton1Click:Connect(function()
@@ -652,7 +665,6 @@ NoclipButton.MouseButton1Click:Connect(function()
             noclipConnection:Disconnect()
             noclipConnection = nil
         end
-        -- Restaura colisões ao desligar, para não cair pelo chão
         local char = LocalPlayer.Character
         if char then
             for _, p in ipairs(char:GetDescendants()) do
@@ -663,6 +675,102 @@ NoclipButton.MouseButton1Click:Connect(function()
         end
     end
 end)
+
+-- ==========================================
+-- ✈️👻 SISTEMA DE VOO + NOCLIP UNIDOS (TECLA F)
+-- ==========================================
+local FlyButton = addButton(pages.Combat, "✈️ Voo (Fly - Tecla F): ❌ DESLIGADO")
+
+local function toggleFlyAndNoclip()
+    flyActive = not flyActive
+    noclipActive = flyActive
+
+    FlyButton.Text = flyActive and "✈️ Voo (Fly - Tecla F): ✅ LIGADO" or "✈️ Voo (Fly - Tecla F): ❌ DESLIGADO"
+    FlyButton.BackgroundColor3 = flyActive and Color3.fromRGB(40, 140, 70) or Color3.fromRGB(30, 30, 42)
+
+    NoclipButton.Text = noclipActive and "👻 Noclip (Atravessar Paredes): ✅ LIGADO" or "👻 Noclip (Atravessar Paredes): ❌ DESLIGADO"
+    NoclipButton.BackgroundColor3 = noclipActive and Color3.fromRGB(40, 140, 70) or Color3.fromRGB(30, 30, 42)
+
+    local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    local hrp = char:WaitForChild("HumanoidRootPart", 2)
+    local hum = char:WaitForChild("Humanoid", 2)
+
+    if flyActive and hrp and hum then
+        hum.PlatformStand = true
+
+        if flyBodyVelocity then flyBodyVelocity:Destroy() end
+        if flyBodyGyro then flyBodyGyro:Destroy() end
+
+        flyBodyVelocity = Instance.new("BodyVelocity")
+        flyBodyVelocity.Velocity = Vector3.new(0, 0, 0)
+        flyBodyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+        flyBodyVelocity.Parent = hrp
+
+        flyBodyGyro = Instance.new("BodyGyro")
+        flyBodyGyro.P = 9e4
+        flyBodyGyro.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+        flyBodyGyro.CFrame = hrp.CFrame
+        flyBodyGyro.Parent = hrp
+
+        if flyConnection then flyConnection:Disconnect() end
+        flyConnection = RunService.RenderStepped:Connect(function()
+            if not _G.PaulinoMenuRunning or not flyActive then return end
+
+            local currentChar = LocalPlayer.Character
+            if not currentChar or not currentChar:FindFirstChild("HumanoidRootPart") then return end
+
+            local currentHrp = currentChar.HumanoidRootPart
+            local currentHum = currentChar:FindFirstChildOfClass("Humanoid")
+
+            for _, p in ipairs(currentChar:GetDescendants()) do
+                if p:IsA("BasePart") then
+                    p.CanCollide = false
+                end
+            end
+
+            if not flyBodyVelocity or not flyBodyVelocity.Parent then
+                if currentHum then currentHum.PlatformStand = true end
+                flyBodyVelocity = Instance.new("BodyVelocity", currentHrp)
+                flyBodyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+                flyBodyGyro = Instance.new("BodyGyro", currentHrp)
+                flyBodyGyro.P = 9e4
+                flyBodyGyro.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+            end
+
+            local cam = Workspace.CurrentCamera
+            flyBodyGyro.CFrame = cam.CFrame
+
+            local moveDir = Vector3.new()
+            if UserInputService:IsKeyDown(Enum.KeyCode.W) then moveDir = moveDir + cam.CFrame.LookVector end
+            if UserInputService:IsKeyDown(Enum.KeyCode.S) then moveDir = moveDir - cam.CFrame.LookVector end
+            if UserInputService:IsKeyDown(Enum.KeyCode.A) then moveDir = moveDir - cam.CFrame.RightVector end
+            if UserInputService:IsKeyDown(Enum.KeyCode.D) then moveDir = moveDir + cam.CFrame.RightVector end
+            if UserInputService:IsKeyDown(Enum.KeyCode.Space) then moveDir = moveDir + Vector3.new(0, 1, 0) end
+            if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then moveDir = moveDir - Vector3.new(0, 1, 0) end
+
+            if moveDir.Magnitude > 0 then
+                flyBodyVelocity.Velocity = moveDir.Unit * flySpeed
+            else
+                flyBodyVelocity.Velocity = Vector3.new(0, 0, 0)
+            end
+        end)
+    else
+        if hum then hum.PlatformStand = false end
+        if flyBodyVelocity then flyBodyVelocity:Destroy() flyBodyVelocity = nil end
+        if flyBodyGyro then flyBodyGyro:Destroy() flyBodyGyro = nil end
+        if flyConnection then flyConnection:Disconnect() flyConnection = nil end
+
+        if char then
+            for _, p in ipairs(char:GetDescendants()) do
+                if p:IsA("BasePart") then
+                    p.CanCollide = true
+                end
+            end
+        end
+    end
+end
+
+FlyButton.MouseButton1Click:Connect(toggleFlyAndNoclip)
 
 addLabel(pages.Combat, "🏃‍♂️ Configurações de Movimento (0 a 100):")
 
@@ -721,7 +829,7 @@ local function createInputRow(labelText, defaultVal, callback)
     box.FocusLost:Connect(function()
         local num = tonumber(box.Text)
         if num then
-            num = math.clamp(num, 0, 100)
+            num = math.clamp(num, 0, 150)
             box.Text = tostring(num)
             callback(num)
         else
@@ -737,6 +845,10 @@ end)
 
 createInputRow("🦘 Pulo (0-100):", 50, function(val)
     customJumpPower = val
+end)
+
+createInputRow("✈️ Vel. Voo (10-150):", 50, function(val)
+    flySpeed = val
 end)
 
 local ResetSpeedBtn = addButton(pages.Combat, "🔄 Voltar Velocidade/Pulo ao Normal")
@@ -795,14 +907,22 @@ local function teleportToNearest()
 end
 TpNearestButton.MouseButton1Click:Connect(teleportToNearest)
 
+-- ==========================================
+-- ⌨️ TECLAS DE ATALHO (COM BLOQUEIO DE CHAT)
+-- ==========================================
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if gameProcessed then return end
-    if input.KeyCode == Enum.KeyCode.G then grabGunFromFloor()
-    elseif input.KeyCode == Enum.KeyCode.R then teleportToNearest()
+    if UserInputService:GetFocusedTextBox() then return end
+    
+    if input.KeyCode == Enum.KeyCode.G then 
+        grabGunFromFloor()
+    elseif input.KeyCode == Enum.KeyCode.R then 
+        teleportToNearest()
     elseif input.KeyCode == Enum.KeyCode.E then
         aimbotActive = not aimbotActive
         AimbotButton.Text = aimbotActive and "🎯 Aimbot (Tecla E): ✅ LIGADO" or "🎯 Aimbot (Tecla E): ❌ DESLIGADO"
         AimbotButton.BackgroundColor3 = aimbotActive and Color3.fromRGB(40, 140, 70) or Color3.fromRGB(30, 30, 42)
+    elseif input.KeyCode == Enum.KeyCode.F then
+        toggleFlyAndNoclip()
     end
 end)
 
