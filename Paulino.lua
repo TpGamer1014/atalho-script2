@@ -29,6 +29,9 @@ local flySpeed = 50
 local flyBodyVelocity = nil
 local flyBodyGyro = nil
 
+local fpsCounterAtivo = false
+local fpsConnection = nil
+
 local xpFarmConnection = nil
 local safePlatform = nil
 local antiFlingConnection = nil
@@ -61,6 +64,21 @@ end
 iniciarAntiFling()
 
 -- ==========================================
+-- 🚀 DESBLOQUEADOR PASSIVO DE FPS (FPS UNLOCKER)
+-- ==========================================
+local function iniciarDesbloqueioFPS()
+    pcall(function()
+        if setfpscap then
+            setfpscap(9999)
+        end
+    end)
+    pcall(function()
+        settings().Rendering.FramerateCap = 9999
+    end)
+end
+iniciarDesbloqueioFPS()
+
+-- ==========================================
 -- 🎨 CRIAÇÃO DA GUI ESTILIZADA
 -- ==========================================
 local function getGuiContainer()
@@ -80,6 +98,31 @@ ScreenGui.Name = "PaulinoGUI"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Enabled = true
 ScreenGui.Parent = parentContainer
+
+-- ==========================================
+-- 📊 CONTADOR DE FPS FLUTUANTE
+-- ==========================================
+local FpsLabel = Instance.new("TextLabel")
+FpsLabel.Size = UDim2.new(0, 90, 0, 28)
+FpsLabel.Position = UDim2.new(0, 15, 0, 15)
+FpsLabel.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+FpsLabel.BackgroundTransparency = 0.3
+FpsLabel.TextColor3 = Color3.fromRGB(0, 255, 140)
+FpsLabel.TextSize = 13
+FpsLabel.Font = Enum.Font.GothamBold
+FpsLabel.Text = "FPS: --"
+FpsLabel.Visible = false
+FpsLabel.Parent = ScreenGui
+
+local FpsCorner = Instance.new("UICorner")
+FpsCorner.CornerRadius = UDim.new(0, 6)
+FpsCorner.Parent = FpsLabel
+
+local FpsStroke = Instance.new("UIStroke")
+FpsStroke.Color = Color3.fromRGB(120, 90, 255)
+FpsStroke.Transparency = 0.5
+FpsStroke.Thickness = 1.2
+FpsStroke.Parent = FpsLabel
 
 local MainFrame = Instance.new("Frame")
 MainFrame.Size = UDim2.new(0, 520, 0, 360)
@@ -481,6 +524,7 @@ CloseBtn.MouseButton1Click:Connect(function()
     if speedJumpConnection then speedJumpConnection:Disconnect() end
     if noclipConnection then noclipConnection:Disconnect() end
     if flyConnection then flyConnection:Disconnect() end
+    if fpsConnection then fpsConnection:Disconnect() end
 
     if LocalPlayer.Character then
         for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
@@ -517,6 +561,37 @@ FpsBoostButton.MouseButton1Click:Connect(function()
                 end
             end
         end)
+    end
+end)
+
+local FpsCounterButton = addButton(pages.Settings, "📊 Mostrar FPS no Ecrã: ❌ DESLIGADO")
+
+FpsCounterButton.MouseButton1Click:Connect(function()
+    fpsCounterAtivo = not fpsCounterAtivo
+    FpsCounterButton.Text = fpsCounterAtivo and "📊 Mostrar FPS no Ecrã: ✅ LIGADO" or "📊 Mostrar FPS no Ecrã: ❌ DESLIGADO"
+    FpsCounterButton.BackgroundColor3 = fpsCounterAtivo and Color3.fromRGB(40, 140, 70) or Color3.fromRGB(30, 30, 42)
+    
+    FpsLabel.Visible = fpsCounterAtivo
+    
+    if fpsCounterAtivo then
+        local lastTime = tick()
+        local frames = 0
+        if not fpsConnection then
+            fpsConnection = RunService.RenderStepped:Connect(function()
+                frames = frames + 1
+                if tick() - lastTime >= 0.5 then
+                    local fps = math.floor(frames / (tick() - lastTime))
+                    FpsLabel.Text = "FPS: " .. tostring(fps)
+                    frames = 0
+                    lastTime = tick()
+                end
+            end)
+        end
+    else
+        if fpsConnection then
+            fpsConnection:Disconnect()
+            fpsConnection = nil
+        end
     end
 end)
 
